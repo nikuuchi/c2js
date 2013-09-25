@@ -1,0 +1,1 @@
+{"option": "-m", "source": "#include <stdio.h>\nint main(int argc, char* argv[]) {\n\tprintf(\"hello, world!\\n\");\n\treturn 0;\n}"}
