@@ -30,6 +30,10 @@ $(function () {
         $output.text('Waiting for compilation ...');
         C2JS.Compile(src, opt, function(res){
             $output.text('');
+            if(res == null) {
+                $output.text('Sorry, server is something wrong.');
+                return;
+            }
             if(res.error.length > 0) {
                 $output.html(res.error);
             }else {
