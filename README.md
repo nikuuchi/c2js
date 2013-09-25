@@ -1,4 +1,4 @@
 c2js
 ====
 
-sample cgi for practice
+CGI for c2js
