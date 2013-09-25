@@ -12,9 +12,9 @@ def CreateResponseJson(source, result, error):
 print "Content-Type: application/json"
 print ""
 
-#if os.environ['REQUEST_METHOD'] != "POST":
-#    print '{\'error\':No Method Error\' }'
-#    sys.exit()
+if os.environ['REQUEST_METHOD'] != "POST":
+    print '{\'error\':No Method Error\' }'
+    sys.exit()
 
 name = commands.getoutput("/bin/mktemp -q /tmp/XXXXXX.c")
 req = json.load(sys.stdin)
