@@ -18,9 +18,10 @@ $(function () {
 
     var editor_gs = CodeMirror.fromTextArea(document.getElementById("editor-gs"), {
         lineNumbers: true,
+        indentUnit: 4,
         mode: "text/x-csrc"
     });
-    editor_gs.setValue("#include <stdio.h>\n\nint main(int argc, char* argv[]) {\n\tprintf(\"hello, world!\\n\");\n\treturn 0;\n}");
+    editor_gs.setValue("#include <stdio.h>\n\nint main(int argc, char* argv[]) {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
 
     $("#compile").click(function(e){
         var src = editor_gs.getValue();
@@ -32,8 +33,7 @@ $(function () {
             if(res.error.length > 0) {
                 $output.html(res.error);
             }else {
-                var printBuf = "";
-                var Module = {print:function(x){$output.append(x+"<br>");printBuf += x;console.log(x);}};
+                var Module = {print:function(x){$output.append(x+"<br>");/*console.log(x);*/}};
                 eval(res.source);
             }
         });
