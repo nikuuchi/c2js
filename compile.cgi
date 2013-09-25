@@ -4,6 +4,7 @@
 import sys
 import os
 import commands
+import codecs
 import json
 
 def CreateResponseJson(source, result, error):
@@ -18,7 +19,7 @@ if os.environ['REQUEST_METHOD'] != "POST":
 
 name = commands.getoutput("/bin/mktemp -q /tmp/XXXXXX.c")
 req = json.load(sys.stdin)
-f = open(name, 'w')
+f = codecs.open(name, 'w', 'utf-8')
 f.write(req['source'])
 f.close()
 message = commands.getoutput('emcc -O1 ' + name + ' -o ' + name + '.js')
