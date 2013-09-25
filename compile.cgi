@@ -21,7 +21,7 @@ req = json.load(sys.stdin)
 f = open(name, 'w')
 f.write(req['source'])
 f.close()
-message = commands.getoutput('emcc ' + name + ' -o ' + name + '.js')
+message = commands.getoutput('emcc -O1 ' + name + ' -o ' + name + '.js')
 jsfilecontent = ''
 if os.path.exists(name+'.js'):
     a = open(name+'.js', 'r')
