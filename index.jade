@@ -1,0 +1,38 @@
+mixin js(path)
+    script(type='text/javascript', src=path)
+mixin css(path)
+    link(rel='stylesheet', href=path)
+!!! 5
+html
+  head
+    title Playground
+    +css('lib/codemirror/codemirror.css')
+    +css('lib/bootstrap.min.css')
+  body
+    // Wrap all page content here
+    #wrap
+      // Begin page content
+      .container-fluid
+        .header
+          h1 C Playground
+        .row-fluid
+          .col-lg-12
+            .navbar
+              a.navbar-brand program.c
+              a#compile.btn.btn-success.pull-right.navbar-btn Run
+            p
+              textarea#editor-gs
+        .row-fluid
+          .col-lg-12
+            .panel
+              .panel-heading
+                h3.panel-title Output
+              #editor-error.panel-body
+    // Include all compiled plugins (below), or include individual files as needed
+    +js('./lib/jquery.min.js')
+    +js('./lib/bootstrap.min.js')
+    +js('./lib/codemirror/codemirror.js')
+    +js('./lib/codemirror/display/placeholder.js')
+    +js('./lib/codemirror/mode/clike/clike.js')
+    // JavaScript plugins (requires jQuery)
+    +js('./index.js')
