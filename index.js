@@ -39,8 +39,6 @@ $(function () {
                 $output.append('Sorry, server is something wrong.');
                 return;
             }
-            $output.append('$ ./program');
-            $output.append('<br>');
             if(res.error.length > 0) {
                 $output.append(C2JS.TerminalColor(res.error.replace(/\n/g,"<br>\n")
                         .replace(/\/.*\.c/g,"program.c")
@@ -49,7 +47,11 @@ $(function () {
                         .replace(/(warning:.*)$/gm,"<span class='text-warning'>$1</span>")
                         .replace(/(error:.*)$/gm,"<span class='text-danger'>$1</span>")
                 ));
-            }else {
+                $output.append('<br>');
+            }
+            if(!res.error.match("error:")) {
+                $output.append('$ ./program');
+                $output.append('<br>');
                 var Module = {print:function(x){$output.append(x+"<br>");/*console.log(x);*/}};
                 try {
                     var exe = new Function("Module",res.source);
