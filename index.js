@@ -12,6 +12,7 @@ var C2JS;
             error: function() { alert("error"); }
         });
     }
+
 })(C2JS || (C2JS = {}));
 
 $(function () {
@@ -27,18 +28,25 @@ $(function () {
         var src = editor_gs.getValue();
         var opt = '-m'; //TODO
         var $output = $('#editor-error');
-        $output.text('Waiting for compilation ...');
+        $output.text('$ gcc program.c -o program');
+        $output.append('<br>');
         C2JS.Compile(src, opt, function(res){
-            $output.text('');
             if(res == null) {
-                $output.text('Sorry, server is something wrong.');
+                $output.append('Sorry, server is something wrong.');
                 return;
             }
+            $output.append('$ ./program');
+            $output.append('<br>');
             if(res.error.length > 0) {
                 $output.html(res.error);
             }else {
                 var Module = {print:function(x){$output.append(x+"<br>");/*console.log(x);*/}};
-                eval(res.source);
+                try {
+                    var exe = new Function("Module",res.source);
+                    exe(Module);
+                }catch(e) {
+                    $output.html(e);
+                }
             }
         });
     });
