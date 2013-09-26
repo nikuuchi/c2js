@@ -13,6 +13,10 @@ var C2JS;
         });
     }
 
+    C2JS.TerminalColor = function(log) {
+        return log.replace(/\[31m(.*)\[0m/g,'<span class="text-danger">$1</span>');
+    }
+
 })(C2JS || (C2JS = {}));
 
 $(function () {
@@ -38,7 +42,13 @@ $(function () {
             $output.append('$ ./program');
             $output.append('<br>');
             if(res.error.length > 0) {
-                $output.html(res.error);
+                $output.append(C2JS.TerminalColor(res.error.replace(/\n/g,"<br>\n")
+                        .replace(/\/.*\.c/g,"program.c")
+                        .replace(/\/.*\/(.*\.h)/g, "$1")
+                        .replace(/(note:.*)$/gm,"<span class='text-info'>$1</span>")
+                        .replace(/(warning:.*)$/gm,"<span class='text-warning'>$1</span>")
+                        .replace(/(error:.*)$/gm,"<span class='text-danger'>$1</span>")
+                ));
             }else {
                 var Module = {print:function(x){$output.append(x+"<br>");/*console.log(x);*/}};
                 try {
