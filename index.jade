@@ -5,29 +5,39 @@ mixin css(path)
 !!! 5
 html
   head
-    title Playground
+    title Aspen
     +css('lib/codemirror/codemirror.css')
     +css('lib/bootstrap.min.css')
-  body
+  body(style="padding: 30px;")
     // Wrap all page content here
     #wrap
-      // Begin page content
-      .container-fluid
-        .header
-          h1 C Playground
-        .row-fluid
-          .col-lg-12
-            .navbar
-              a.navbar-brand program.c
-              a#compile.btn.btn-success.pull-right.navbar-btn Run
-            p
-              textarea#editor-gs
-        .row-fluid
-          .col-lg-12
-            .panel
-              .panel-heading
-                h3.panel-title Output
-              #editor-error.panel-body
+      .container
+        .navbar.navbar-default
+            .navbar-header
+              button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
+                span.icon-bar
+                span.icon-bar
+                span.icon-bar
+              a.navbar-brand Aspen
+            .navbar-collapse
+              ul.nav.navbar-nav
+                li.active
+                  a(href='#') Playground
+                li
+                  a(href='#sample') Sample
+                li
+                  a(href='#slide') Slide
+                li
+                  a(href='#contact') Contact
+        h2
+            span#file-name program.c
+            a#compile.btn.btn-primary.pull-right.navbar-btn Run
+        p
+          textarea#editor-gs(rows="25", style="width:100%;")
+        .panel
+          .panel-heading
+            h3.panel-title Output
+          #editor-error.panel-body
     // Include all compiled plugins (below), or include individual files as needed
     +js('./lib/jquery.min.js')
     +js('./lib/bootstrap.min.js')
