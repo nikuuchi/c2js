@@ -1,31 +1,31 @@
-var C2JS;
-(function (C2JS) {
-    function Compile(source, option, flag, Context, callback) {
-        if (flag) {
+///<reference path='d.ts/jquery.d.ts'/>
+
+declare var CodeMirror: any;
+
+module C2JS {
+    export function Compile(source, option, flag, Context, callback) {
+        if(flag) {
             $.ajax({
                 type: "POST",
                 url: "compile.cgi",
-                data: JSON.stringify({ source: source, option: option }),
+                data: JSON.stringify({source: source, option: option}),
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 success: callback,
-                error: function () {
-                    alert("error");
-                }
+                error: function() { alert("error"); }
             });
         } else {
             callback(Context);
         }
     }
-    C2JS.Compile = Compile;
 
-    function TerminalColor(log) {
-        return log.replace(/\[31m(.*)\[0m/g, '<span class="text-danger">$1</span>');
+    export function TerminalColor(log) {
+        return log.replace(/\[31m(.*)\[0m/g,'<span class="text-danger">$1</span>');
     }
-    C2JS.TerminalColor = TerminalColor;
-})(C2JS || (C2JS = {}));
+}
 
 $(function () {
+
     var $editor = $("#editor-gs");
     var editorSize = { width: $editor.width(), height: $editor.height() };
     var editor_gs = CodeMirror.fromTextArea(document.getElementById("editor-gs"), {
@@ -37,51 +37,55 @@ $(function () {
     editor_gs.setSize(editorSize.width, editorSize.height);
 
     var changeFlag = true;
-    editor_gs.on("change", function (e) {
+    editor_gs.on("change", function(e){
         changeFlag = true;
     });
 
     var fileName = "Program";
 
-    $("#file-name").text(fileName + ".c");
+    $("#file-name").text(fileName+".c");
 
-    var Context = {};
+    var Context: any = {};
     var $output = $('#editor-error');
     $output.text('$ ');
 
-    $("#clear").click(function (e) {
+    $("#clear").click(function(e){
         $output.text('$ ');
     });
 
-    $("#compile").click(function (e) {
+    $("#compile").click(function(e){
         var src = editor_gs.getValue();
-        var opt = '-m';
-        $output.append('gcc ' + fileName + '.c -o ' + fileName);
+        var opt = '-m'; //TODO
+        $output.append('gcc '+fileName+'.c -o '+fileName);
         $output.append('<br>');
-        C2JS.Compile(src, opt, changeFlag, Context, function (res) {
+        C2JS.Compile(src, opt, changeFlag, Context, function(res){
             changeFlag = false;
-            if (res == null) {
+            if(res == null) {
                 $output.append('Sorry, server is something wrong.');
                 return;
             }
-            if (res.error.length > 0) {
-                $output.append(C2JS.TerminalColor(res.error.replace(/\n/g, "<br>\n").replace(/\/.*\.c/g, fileName + ".c").replace(/\/.*\/(.*\.h)/g, "$1").replace(/(note:.*)$/gm, "<span class='text-info'>$1</span>").replace(/(warning:.*)$/gm, "<span class='text-warning'>$1</span>").replace(/(error:.*)$/gm, "<span class='text-danger'>$1</span>")));
+            if(res.error.length > 0) {
+                $output.append(C2JS.TerminalColor(res.error.replace(/\n/g,"<br>\n")
+                        .replace(/\/.*\.c/g,fileName+".c")
+                        .replace(/\/.*\/(.*\.h)/g, "$1")
+                        .replace(/(note:.*)$/gm,"<span class='text-info'>$1</span>")
+                        .replace(/(warning:.*)$/gm,"<span class='text-warning'>$1</span>")
+                        .replace(/(error:.*)$/gm,"<span class='text-danger'>$1</span>")
+                ));
                 $output.append('<br>');
             }
             $output.append('$ ');
 
             Context.error = res.error;
-            if (!res.error.match("error:")) {
+            if(!res.error.match("error:")) {
                 Context.source = res.source;
-                $output.append('./' + fileName);
+                $output.append('./'+fileName);
                 $output.append('<br>');
-                var Module = { print: function (x) {
-                        $output.append(x + "<br>");/*console.log(x);*/ 
-                    } };
-                try  {
-                    var exe = new Function("Module", res.source);
+                var Module = {print:function(x){$output.append(x+"<br>");/*console.log(x);*/}};
+                try {
+                    var exe = new Function("Module",res.source);
                     exe(Module);
-                } catch (e) {
+                }catch(e) {
                     $output.html(e);
                 }
                 $output.append('$ ');
@@ -90,4 +94,5 @@ $(function () {
             }
         });
     });
+
 });
