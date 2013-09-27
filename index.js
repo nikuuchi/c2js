@@ -75,9 +75,9 @@ $(function () {
             }
             $output.append('$ ');
 
+            Context.error = res.error;
             if(!res.error.match("error:")) {
                 Context.source = res.source;
-                Context.error = res.error;
                 $output.append('./'+fileName);
                 $output.append('<br>');
                 var Module = {print:function(x){$output.append(x+"<br>");/*console.log(x);*/}};
@@ -88,6 +88,8 @@ $(function () {
                     $output.html(e);
                 }
                 $output.append('$ ');
+            } else {
+                Context.source = null;
             }
         });
     });
