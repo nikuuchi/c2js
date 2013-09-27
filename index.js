@@ -1,16 +1,20 @@
 var C2JS;
 
 (function (C2JS) {
-    C2JS.Compile = function(source, option, callback) {
-        $.ajax({
-            type: "POST",
-            url: "compile.cgi",
-            data: JSON.stringify({source: source, option: option}),
-            dataType: 'json',
-            contentType: "application/json; charset=utf-8",
-            success: callback,
-            error: function() { alert("error"); }
-        });
+    C2JS.Compile = function(source, option, flag, Context, callback) {
+        if(flag) {
+            $.ajax({
+                type: "POST",
+                url: "compile.cgi",
+                data: JSON.stringify({source: source, option: option}),
+                dataType: 'json',
+                contentType: "application/json; charset=utf-8",
+                success: callback,
+                error: function() { alert("error"); }
+            });
+        } else {
+            callback(Context);
+        }
     }
 
     C2JS.TerminalColor = function(log) {
@@ -31,17 +35,30 @@ $(function () {
     editor_gs.setValue("#include <stdio.h>\n\nint main(int argc, char* argv[]) {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
     editor_gs.setSize(editorSize.width, editorSize.height);
 
+    var changeFlag = true;
+    editor_gs.on("change", function(e){
+        changeFlag = true;
+    });
+
     var fileName = "Program";
 
     $("#file-name").text(fileName+".c");
 
+    var Context = {};
+    var $output = $('#editor-error');
+    $output.text('$ ');
+
+    $("#clear").click(function(e){
+        $output.text('$ ');
+    });
+
     $("#compile").click(function(e){
         var src = editor_gs.getValue();
         var opt = '-m'; //TODO
-        var $output = $('#editor-error');
-        $output.text('$ gcc '+fileName+'.c -o '+fileName);
+        $output.append('gcc '+fileName+'.c -o '+fileName);
         $output.append('<br>');
-        C2JS.Compile(src, opt, function(res){
+        C2JS.Compile(src, opt, changeFlag, Context, function(res){
+            changeFlag = false;
             if(res == null) {
                 $output.append('Sorry, server is something wrong.');
                 return;
@@ -56,8 +73,12 @@ $(function () {
                 ));
                 $output.append('<br>');
             }
+            $output.append('$ ');
+
             if(!res.error.match("error:")) {
-                $output.append('$ ./'+fileName);
+                Context.source = res.source;
+                Context.error = res.error;
+                $output.append('./'+fileName);
                 $output.append('<br>');
                 var Module = {print:function(x){$output.append(x+"<br>");/*console.log(x);*/}};
                 try {
@@ -66,7 +87,9 @@ $(function () {
                 }catch(e) {
                     $output.html(e);
                 }
+                $output.append('$ ');
             }
         });
     });
+
 });

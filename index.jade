@@ -31,12 +31,19 @@ html
                   a(href='#contact') Contact
         h2
             span#file-name program.c
-            a#compile.btn.btn-primary.pull-right.navbar-btn Run
+            .pull-right
+                a#open.btn.btn-default Open
+                | &nbsp;
+                a#save.btn.btn-default Save
         p
           textarea#editor-gs(rows="25", style="width:100%;")
         .panel
           .panel-heading
-            h3.panel-title Output
+            h4 Output
+                | &nbsp;
+                a#compile.btn.btn-default Compile & run
+                | &nbsp;
+                a#clear.btn.btn-default Clear
           #editor-error.panel-body
     // Include all compiled plugins (below), or include individual files as needed
     +js('./lib/jquery.min.js')
