@@ -17,10 +17,9 @@ module C2JS {
     export class Editor {
         size: Size;
         editor: any; //TODO CodeMirror
-        constructor() {
-            var $editor = $("#editor");
+        constructor($editor: JQuery) {
             this.size = new Size($editor.width(), $editor.height());
-            this.editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+            this.editor = CodeMirror.fromTextArea($editor[0], {
                 lineNumbers: true,
                 indentUnit: 4,
                 mode: "text/x-csrc"
@@ -36,6 +35,24 @@ module C2JS {
         GetValue(): string {
             return this.editor.getValue();
         }
+    }
+
+    export class Output {
+        constructor(public $output: JQuery){
+        }
+
+        PrintLn(val: string): void {
+            this.$output.append(val + '<br>');
+        }
+
+        Prompt(): void {
+            this.$output.append('$ ');
+        }
+
+        Clear(): void {
+            this.$output.text('');
+        }
+
     }
 
     export function Compile(source, option, flag, Context, callback) {
@@ -61,7 +78,10 @@ module C2JS {
 
 $(function () {
 
-    var Editor: C2JS.Editor = new C2JS.Editor();
+    var Editor: C2JS.Editor = new C2JS.Editor($("#editor"));
+    var Output: C2JS.Output = new C2JS.Output($("#output"));
+
+    var Context: any = {}; //TODO refactor C2JS.Response
 
     var changeFlag = true;
     Editor.OnChange((e: Event)=> {
@@ -72,50 +92,47 @@ $(function () {
 
     $("#file-name").text(fileName+".c");
 
-    var Context: any = {}; //TODO refactor C2JS.Response
-    var $output = $('#output');
-    $output.text('$ ');
+    Output.Prompt();
 
     $("#clear").click(function(e){
-        $output.text('$ ');
+        Output.Clear();
+        Output.Prompt();
     });
 
     $("#compile").click(function(e){
         var src = Editor.GetValue();
         var opt = '-m'; //TODO
-        $output.append('gcc '+fileName+'.c -o '+fileName);
-        $output.append('<br>');
+        Output.PrintLn('gcc '+fileName+'.c -o '+fileName);
+
         C2JS.Compile(src, opt, changeFlag, Context, function(res){
             changeFlag = false;
             if(res == null) {
-                $output.append('Sorry, server is something wrong.');
+                Output.PrintLn('Sorry, server is something wrong.');
                 return;
             }
             if(res.error.length > 0) {
-                $output.append(C2JS.TerminalColor(res.error.replace(/\n/g,"<br>\n")
+                Output.PrintLn(C2JS.TerminalColor(res.error.replace(/\n/g,"<br>\n")
                         .replace(/\/.*\.c/g,fileName+".c")
                         .replace(/\/.*\/(.*\.h)/g, "$1")
                         .replace(/(note:.*)$/gm,"<span class='text-info'>$1</span>")
                         .replace(/(warning:.*)$/gm,"<span class='text-warning'>$1</span>")
                         .replace(/(error:.*)$/gm,"<span class='text-danger'>$1</span>")
                 ));
-                $output.append('<br>');
             }
-            $output.append('$ ');
+            Output.Prompt();
 
             Context.error = res.error;
             if(!res.error.match("error:")) {
                 Context.source = res.source;
-                $output.append('./'+fileName);
-                $output.append('<br>');
-                var Module = {print:function(x){$output.append(x+"<br>");/*console.log(x);*/}};
+                Output.PrintLn('./'+fileName);
+                var Module = {print:function(x){Output.PrintLn(x);/*console.log(x);*/}};
                 try {
                     var exe = new Function("Module",res.source);
                     exe(Module);
                 }catch(e) {
-                    $output.html(e);
+                    Output.PrintLn(e);
                 }
-                $output.append('$ ');
+                Output.Prompt();
             } else {
                 Context.source = null;
             }
