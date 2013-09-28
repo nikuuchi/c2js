@@ -36,7 +36,7 @@ html
                 | &nbsp;
                 a#save.btn.btn-default Save
         p
-          textarea#editor-gs(rows="20", style="width:100%;")
+          textarea#editor(rows="20", style="width:100%;")
         .panel
           .panel-heading
             h4 Output
@@ -44,7 +44,7 @@ html
                 a#compile.btn.btn-default Compile & run
                 | &nbsp;
                 a#clear.btn.btn-default Clear
-          #editor-error.panel-body
+          #output.panel-body
     // Include all compiled plugins (below), or include individual files as needed
     +js('lib/jquery.min.js')
     +js('lib/bootstrap.min.js')

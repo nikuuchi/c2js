@@ -1,5 +1,37 @@
 var C2JS;
 (function (C2JS) {
+    var Size = (function () {
+        function Size(width, height) {
+            this.width = width;
+            this.height = height;
+        }
+        return Size;
+    })();
+    C2JS.Size = Size;
+
+    var Editor = (function () {
+        function Editor() {
+            var $editor = $("#editor");
+            this.size = new Size($editor.width(), $editor.height());
+            this.editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+                lineNumbers: true,
+                indentUnit: 4,
+                mode: "text/x-csrc"
+            });
+            this.editor.setValue("#include <stdio.h>\n\nint main(int argc, char* argv[]) {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
+            this.editor.setSize(this.size.width, this.size.height);
+        }
+        Editor.prototype.OnChange = function (callback) {
+            this.editor.on("change", callback);
+        };
+
+        Editor.prototype.GetValue = function () {
+            return this.editor.getValue();
+        };
+        return Editor;
+    })();
+    C2JS.Editor = Editor;
+
     function Compile(source, option, flag, Context, callback) {
         if (flag) {
             $.ajax({
@@ -26,18 +58,10 @@ var C2JS;
 })(C2JS || (C2JS = {}));
 
 $(function () {
-    var $editor = $("#editor-gs");
-    var editorSize = { width: $editor.width(), height: $editor.height() };
-    var editor_gs = CodeMirror.fromTextArea(document.getElementById("editor-gs"), {
-        lineNumbers: true,
-        indentUnit: 4,
-        mode: "text/x-csrc"
-    });
-    editor_gs.setValue("#include <stdio.h>\n\nint main(int argc, char* argv[]) {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
-    editor_gs.setSize(editorSize.width, editorSize.height);
+    var Editor = new C2JS.Editor();
 
     var changeFlag = true;
-    editor_gs.on("change", function (e) {
+    Editor.OnChange(function (e) {
         changeFlag = true;
     });
 
@@ -46,7 +70,7 @@ $(function () {
     $("#file-name").text(fileName + ".c");
 
     var Context = {};
-    var $output = $('#editor-error');
+    var $output = $('#output');
     $output.text('$ ');
 
     $("#clear").click(function (e) {
@@ -54,7 +78,7 @@ $(function () {
     });
 
     $("#compile").click(function (e) {
-        var src = editor_gs.getValue();
+        var src = Editor.GetValue();
         var opt = '-m';
         $output.append('gcc ' + fileName + '.c -o ' + fileName);
         $output.append('<br>');
