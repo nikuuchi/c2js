@@ -71,8 +71,27 @@ module C2JS {
         }
     }
 
-    export function TerminalColor(log) {
-        return log.replace(/\[31m(.*)\[0m/g,'<span class="text-danger">$1</span>');
+    function TerminalColor(text: string): string {
+        return text.replace(/\[31m(.*)\[0m/g,'<span class="text-danger">$1</span>');
+    }
+
+    function ReplaceNewLine(text: string): string {
+        return text.replace(/\n/g,"<br>\n");
+    }
+
+    function OutputColor(text: string): string {
+        return text.replace(/(note:.*)$/gm,"<span class='text-info'>$1</span>")
+                   .replace(/(warning:.*)$/gm,"<span class='text-warning'>$1</span>")
+                   .replace(/(error:.*)$/gm,"<span class='text-danger'>$1</span>");
+    }
+
+    function RenameFile(text:string, fileName: string): string {
+        return text.replace(/\/.*\.c/g,fileName+".c")
+                   .replace(/\/.*\/(.*\.h)/g, "$1");
+    }
+
+    export function CreateOutputView(text: string, fileName: string): string {
+        return OutputColor(RenameFile(ReplaceNewLine(TerminalColor(text)), fileName));
     }
 }
 
@@ -111,13 +130,7 @@ $(function () {
                 return;
             }
             if(res.error.length > 0) {
-                Output.PrintLn(C2JS.TerminalColor(res.error.replace(/\n/g,"<br>\n")
-                        .replace(/\/.*\.c/g,fileName+".c")
-                        .replace(/\/.*\/(.*\.h)/g, "$1")
-                        .replace(/(note:.*)$/gm,"<span class='text-info'>$1</span>")
-                        .replace(/(warning:.*)$/gm,"<span class='text-warning'>$1</span>")
-                        .replace(/(error:.*)$/gm,"<span class='text-danger'>$1</span>")
-                ));
+                Output.PrintLn(C2JS.CreateOutputView(res.error, fileName));
             }
             Output.Prompt();
 

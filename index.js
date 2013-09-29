@@ -69,10 +69,26 @@ var C2JS;
     }
     C2JS.Compile = Compile;
 
-    function TerminalColor(log) {
-        return log.replace(/\[31m(.*)\[0m/g, '<span class="text-danger">$1</span>');
+    function TerminalColor(text) {
+        return text.replace(/\[31m(.*)\[0m/g, '<span class="text-danger">$1</span>');
     }
-    C2JS.TerminalColor = TerminalColor;
+
+    function ReplaceNewLine(text) {
+        return text.replace(/\n/g, "<br>\n");
+    }
+
+    function OutputColor(text) {
+        return text.replace(/(note:.*)$/gm, "<span class='text-info'>$1</span>").replace(/(warning:.*)$/gm, "<span class='text-warning'>$1</span>").replace(/(error:.*)$/gm, "<span class='text-danger'>$1</span>");
+    }
+
+    function RenameFile(text, fileName) {
+        return text.replace(/\/.*\.c/g, fileName + ".c").replace(/\/.*\/(.*\.h)/g, "$1");
+    }
+
+    function CreateOutputView(text, fileName) {
+        return OutputColor(RenameFile(ReplaceNewLine(TerminalColor(text)), fileName));
+    }
+    C2JS.CreateOutputView = CreateOutputView;
 })(C2JS || (C2JS = {}));
 
 $(function () {
@@ -109,7 +125,7 @@ $(function () {
                 return;
             }
             if (res.error.length > 0) {
-                Output.PrintLn(C2JS.TerminalColor(res.error.replace(/\n/g, "<br>\n").replace(/\/.*\.c/g, fileName + ".c").replace(/\/.*\/(.*\.h)/g, "$1").replace(/(note:.*)$/gm, "<span class='text-info'>$1</span>").replace(/(warning:.*)$/gm, "<span class='text-warning'>$1</span>").replace(/(error:.*)$/gm, "<span class='text-danger'>$1</span>")));
+                Output.PrintLn(C2JS.CreateOutputView(res.error, fileName));
             }
             Output.Prompt();
 
