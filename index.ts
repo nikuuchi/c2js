@@ -16,7 +16,7 @@ module C2JS {
 
     export class Editor {
         size: Size;
-        editor: any; //TODO CodeMirror
+        private editor: any; //TODO CodeMirror
         constructor($editor: JQuery) {
             this.size = new Size($editor.width(), $editor.height());
             this.editor = CodeMirror.fromTextArea($editor[0], {
@@ -24,7 +24,7 @@ module C2JS {
                 indentUnit: 4,
                 mode: "text/x-csrc"
             });
-            this.editor.setValue("#include <stdio.h>\n\nint main(int argc, char* argv[]) {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
+            this.SetValue("#include <stdio.h>\n\nint main(int argc, char* argv[]) {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
             this.editor.setSize(this.size.width, this.size.height);
         }
 
@@ -34,6 +34,15 @@ module C2JS {
 
         GetValue(): string {
             return this.editor.getValue();
+        }
+
+        SetValue(text: string): void {
+            this.editor.setValue(text);
+        }
+
+        SetSize(size: Size): void {
+            this.editor.setSize(size.width, size.height);
+            this.size = size;
         }
     }
 
@@ -53,6 +62,19 @@ module C2JS {
             this.$output.text('');
         }
 
+    }
+
+    export class SourceDB {
+        constructor() {
+        }
+
+        Save(fileName: string, source: string): void {
+            localStorage.setItem(fileName, source);
+        }
+
+        Load(fileName: string): string {
+            return localStorage.getItem(fileName);
+        }
     }
 
     export function Compile(source, option, flag, Context, callback) {
@@ -97,8 +119,9 @@ module C2JS {
 
 $(function () {
 
-    var Editor: C2JS.Editor = new C2JS.Editor($("#editor"));
-    var Output: C2JS.Output = new C2JS.Output($("#output"));
+    var Editor: C2JS.Editor   = new C2JS.Editor($("#editor"));
+    var Output: C2JS.Output   = new C2JS.Output($("#output"));
+    var DB:     C2JS.SourceDB = new C2JS.SourceDB();
 
     var Context: any = {}; //TODO refactor C2JS.Response
 
@@ -113,12 +136,12 @@ $(function () {
 
     Output.Prompt();
 
-    $("#clear").click(function(e){
+    $("#clear").click((e: Event)=> {
         Output.Clear();
         Output.Prompt();
     });
 
-    $("#compile").click(function(e){
+    $("#compile").click((e: Event)=> {
         var src = Editor.GetValue();
         var opt = '-m'; //TODO
         Output.PrintLn('gcc '+fileName+'.c -o '+fileName);
@@ -152,4 +175,9 @@ $(function () {
         });
     });
 
+    $("#save").click((e: Event)=>{
+    });
+
+    $("#open").click((e: Event)=>{
+    });
 });

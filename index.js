@@ -17,7 +17,7 @@ var C2JS;
                 indentUnit: 4,
                 mode: "text/x-csrc"
             });
-            this.editor.setValue("#include <stdio.h>\n\nint main(int argc, char* argv[]) {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
+            this.SetValue("#include <stdio.h>\n\nint main(int argc, char* argv[]) {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
             this.editor.setSize(this.size.width, this.size.height);
         }
         Editor.prototype.OnChange = function (callback) {
@@ -26,6 +26,15 @@ var C2JS;
 
         Editor.prototype.GetValue = function () {
             return this.editor.getValue();
+        };
+
+        Editor.prototype.SetValue = function (text) {
+            this.editor.setValue(text);
+        };
+
+        Editor.prototype.SetSize = function (size) {
+            this.editor.setSize(size.width, size.height);
+            this.size = size;
         };
         return Editor;
     })();
@@ -49,6 +58,20 @@ var C2JS;
         return Output;
     })();
     C2JS.Output = Output;
+
+    var SourceDB = (function () {
+        function SourceDB() {
+        }
+        SourceDB.prototype.Save = function (fileName, source) {
+            localStorage.setItem(fileName, source);
+        };
+
+        SourceDB.prototype.Load = function (fileName) {
+            return localStorage.getItem(fileName);
+        };
+        return SourceDB;
+    })();
+    C2JS.SourceDB = SourceDB;
 
     function Compile(source, option, flag, Context, callback) {
         if (flag) {
@@ -94,6 +117,7 @@ var C2JS;
 $(function () {
     var Editor = new C2JS.Editor($("#editor"));
     var Output = new C2JS.Output($("#output"));
+    var DB = new C2JS.SourceDB();
 
     var Context = {};
 
@@ -147,5 +171,11 @@ $(function () {
                 Context.source = null;
             }
         });
+    });
+
+    $("#save").click(function (e) {
+    });
+
+    $("#open").click(function (e) {
     });
 });
