@@ -174,8 +174,27 @@ $(function () {
     });
 
     $("#save").click(function (e) {
+        var blob = new Blob([Editor.GetValue()]);
+        var url = (window).URL || (window).webkitURL;
+        var blobURL = url.createObjectURL(blob);
+        window.location.href = blobURL;
     });
 
     $("#open").click(function (e) {
+        $("#file-open-dialog").click();
+    });
+
+    $("#file-open-dialog").change(function (e) {
+        var file = this.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onerror = function (e) {
+                alert(e);
+            };
+            reader.onload = function (e) {
+                Editor.SetValue((e.target).result);
+            };
+            reader.readAsText(file, 'utf-8');
+        }
     });
 });

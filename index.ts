@@ -175,9 +175,29 @@ $(function () {
         });
     });
 
-    $("#save").click((e: Event)=>{
+    $("#save").click((e: Event)=> {
+        var blob = new Blob([Editor.GetValue()]);
+        var url = (<any>window).URL || (<any>window).webkitURL;
+        var blobURL = url.createObjectURL(blob);
+        window.location.href = blobURL;
     });
 
-    $("#open").click((e: Event)=>{
+    $("#open").click((e: Event)=> {
+        $("#file-open-dialog").click();
     });
+
+    $("#file-open-dialog").change(function(e: Event) {
+        var file: File = this.files[0];
+        if(file) {
+            var reader = new FileReader();
+            reader.onerror = (e: Event)=> {
+                alert(<any>e);
+            };
+            reader.onload = (e: Event)=> {
+                Editor.SetValue((<any>e.target).result);
+            };
+            reader.readAsText(file, 'utf-8');
+        }
+    });
+
 });
