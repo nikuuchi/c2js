@@ -135,12 +135,13 @@ $(function () {
 
     var Context = {};
 
+    var fileName = "Program";
+
     var changeFlag = true;
     Editor.OnChange(function (e) {
         changeFlag = true;
+        DB.Save(fileName, Editor.GetValue());
     });
-
-    var fileName = "Program";
 
     $("#file-name").text(fileName + ".c");
 

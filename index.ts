@@ -139,12 +139,14 @@ $(function () {
 
     var Context: any = {}; //TODO refactor C2JS.Response
 
+    var fileName = "Program";
+
     var changeFlag = true;
     Editor.OnChange((e: Event)=> {
         changeFlag = true;
+        DB.Save(fileName, Editor.GetValue());
     });
 
-    var fileName = "Program";
 
     $("#file-name").text(fileName+".c");
 
