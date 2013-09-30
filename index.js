@@ -36,6 +36,16 @@ var C2JS;
             this.editor.setSize(size.width, size.height);
             this.size = size;
         };
+
+        Editor.prototype.Disable = function () {
+            this.editor.setOption("readOnly", "nocursor");
+            $(".CodeMirror-scroll").css({ "background-color": "#eee" });
+        };
+
+        Editor.prototype.Enable = function () {
+            this.editor.setOption("readOnly", false);
+            $(".CodeMirror-scroll").css({ "background-color": "#fff" });
+        };
         return Editor;
     })();
     C2JS.Editor = Editor;
@@ -145,9 +155,13 @@ $(function () {
         var src = Editor.GetValue();
         var opt = '-m';
         Output.PrintLn('gcc ' + fileName + '.c -o ' + fileName);
+        $("#compile").addClass("disabled");
+        Editor.Disable();
 
         C2JS.Compile(src, opt, changeFlag, Context, function (res) {
+            Editor.Enable();
             changeFlag = false;
+            $("#compile").removeClass("disabled");
             if (res == null) {
                 Output.PrintLn('Sorry, server is something wrong.');
                 return;

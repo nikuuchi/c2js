@@ -44,6 +44,16 @@ module C2JS {
             this.editor.setSize(size.width, size.height);
             this.size = size;
         }
+
+        Disable(): void {
+            this.editor.setOption("readOnly", "nocursor");
+            $(".CodeMirror-scroll").css({"background-color": "#eee"});
+        }
+
+        Enable(): void {
+            this.editor.setOption("readOnly", false);
+            $(".CodeMirror-scroll").css({"background-color": "#fff"});
+        }
     }
 
     export class Output {
@@ -149,9 +159,13 @@ $(function () {
         var src = Editor.GetValue();
         var opt = '-m'; //TODO
         Output.PrintLn('gcc '+fileName+'.c -o '+fileName);
+        $("#compile").addClass("disabled");
+        Editor.Disable();
 
         C2JS.Compile(src, opt, changeFlag, Context, function(res){
+            Editor.Enable();
             changeFlag = false;
+            $("#compile").removeClass("disabled");
             if(res == null) {
                 Output.PrintLn('Sorry, server is something wrong.');
                 return;
