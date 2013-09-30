@@ -91,7 +91,7 @@ var C2JS;
         if (flag) {
             $.ajax({
                 type: "POST",
-                url: "compile.cgi",
+                url: "cgi-bin/compile.cgi",
                 data: JSON.stringify({ source: source, option: option }),
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
