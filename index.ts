@@ -75,6 +75,10 @@ module C2JS {
         Load(fileName: string): string {
             return localStorage.getItem(fileName);
         }
+
+        Exist(fileName: string): boolean {
+            return localStorage.getItem(fileName) != null;
+        }
     }
 
     export function Compile(source, option, flag, Context, callback) {
@@ -200,4 +204,11 @@ $(function () {
         }
     });
 
+    $(window).on("beforeunload", (e: Event)=> {
+        DB.Save(fileName, Editor.GetValue());
+    });
+
+    if(DB.Exist(fileName)) {
+        Editor.SetValue(DB.Load(fileName));
+    }
 });

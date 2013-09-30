@@ -69,6 +69,10 @@ var C2JS;
         SourceDB.prototype.Load = function (fileName) {
             return localStorage.getItem(fileName);
         };
+
+        SourceDB.prototype.Exist = function (fileName) {
+            return localStorage.getItem(fileName) != null;
+        };
         return SourceDB;
     })();
     C2JS.SourceDB = SourceDB;
@@ -197,4 +201,12 @@ $(function () {
             reader.readAsText(file, 'utf-8');
         }
     });
+
+    $(window).on("beforeunload", function (e) {
+        DB.Save(fileName, Editor.GetValue());
+    });
+
+    if (DB.Exist(fileName)) {
+        Editor.SetValue(DB.Load(fileName));
+    }
 });
