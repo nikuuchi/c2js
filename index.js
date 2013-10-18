@@ -193,7 +193,7 @@ $(function () {
     });
 
     $("#save").click(function (e) {
-        var blob = new Blob([Editor.GetValue()]);
+        var blob = new Blob([Editor.GetValue()], { type: 'text/plain; charset=UTF-8' });
         saveAs(blob, fileName + ".c");
     });
 
