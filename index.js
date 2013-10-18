@@ -177,7 +177,7 @@ $(function () {
                 Context.source = res.source;
                 Output.PrintLn('./' + fileName);
                 var Module = { print: function (x) {
-                        Output.PrintLn(x);/*console.log(x);*/ 
+                        Output.PrintLn(x);
                     } };
                 try  {
                     var exe = new Function("Module", res.source);
@@ -194,9 +194,7 @@ $(function () {
 
     $("#save").click(function (e) {
         var blob = new Blob([Editor.GetValue()]);
-        var url = (window).URL || (window).webkitURL;
-        var blobURL = url.createObjectURL(blob);
-        window.location.href = blobURL;
+        saveAs(blob, fileName + ".c");
     });
 
     $("#open").click(function (e) {

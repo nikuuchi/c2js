@@ -1,6 +1,7 @@
 ///<reference path='d.ts/jquery.d.ts'/>
 
 declare var CodeMirror: any;
+declare function saveAs(data :Blob, filename: String): void;
 
 module C2JS {
     export interface Response {
@@ -139,7 +140,7 @@ $(function () {
 
     var Context: any = {}; //TODO refactor C2JS.Response
 
-    var fileName = "Program";
+    var fileName = "Program"; //TODO fileName change when file is opened
 
     var changeFlag = true;
     Editor.OnChange((e: Event)=> {
@@ -197,9 +198,7 @@ $(function () {
 
     $("#save").click((e: Event)=> {
         var blob = new Blob([Editor.GetValue()]);
-        var url = (<any>window).URL || (<any>window).webkitURL;
-        var blobURL = url.createObjectURL(blob);
-        window.location.href = blobURL;
+        saveAs(blob, fileName+".c");
     });
 
     $("#open").click((e: Event)=> {
