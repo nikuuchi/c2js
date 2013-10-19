@@ -75,6 +75,35 @@ module C2JS {
 
     }
 
+    export class FileName {
+        name: string;
+        defaultNameKey: string;
+        constructor() {
+            this.defaultNameKey = 'filename:defaultNameKey';
+            this.name = localStorage.getItem(this.defaultNameKey);
+            if(this.name == null) {
+                this.name = 'Program.c';
+            }
+        }
+
+        Show(): void {
+            $("#file-name").text(this.name);
+        }
+
+        Update(text: string): void {
+            this.name = text;
+            localStorage.setItem(this.defaultNameKey, this.name);
+        }
+
+        GetName(): string {
+            return this.name;
+        }
+
+        GetNameWithoutExtension(): string {
+            return this.name.replace(/\..*/, "");
+        }
+    }
+
     export class SourceDB {
         constructor() {
         }
@@ -140,16 +169,15 @@ $(function () {
 
     var Context: any = {}; //TODO refactor C2JS.Response
 
-    var fileName = "Program"; //TODO fileName change when file is opened
+    var Name: C2JS.FileName = new C2JS.FileName();
 
     var changeFlag = true;
     Editor.OnChange((e: Event)=> {
         changeFlag = true;
-        DB.Save(fileName, Editor.GetValue());
+        DB.Save(Name.GetName(), Editor.GetValue());
     });
 
-
-    $("#file-name").text(fileName+".c");
+    Name.Show();
 
     Output.Prompt();
 
@@ -161,7 +189,7 @@ $(function () {
     $("#compile").click((e: Event)=> {
         var src = Editor.GetValue();
         var opt = '-m'; //TODO
-        Output.PrintLn('gcc '+fileName+'.c -o '+fileName);
+        Output.PrintLn('gcc '+Name.GetName()+' -o '+Name.GetNameWithoutExtension());
         $("#compile").addClass("disabled");
         Editor.Disable();
 
@@ -174,14 +202,14 @@ $(function () {
                 return;
             }
             if(res.error.length > 0) {
-                Output.PrintLn(C2JS.CreateOutputView(res.error, fileName));
+                Output.PrintLn(C2JS.CreateOutputView(res.error, Name.GetNameWithoutExtension()));
             }
             Output.Prompt();
 
             Context.error = res.error;
             if(!res.error.match("error:")) {
                 Context.source = res.source;
-                Output.PrintLn('./'+fileName);
+                Output.PrintLn('./'+Name.GetNameWithoutExtension());
                 var Module = {print:function(x){Output.PrintLn(x);/*console.log(x);*/}};
                 try {
                     var exe = new Function("Module",res.source);
@@ -198,7 +226,7 @@ $(function () {
 
     $("#save").click((e: Event)=> {
         var blob = new Blob([Editor.GetValue()], {type: 'text/plain; charset=UTF-8'});
-        saveAs(blob, fileName+".c");
+        saveAs(blob, Name.GetName());
     });
 
     $("#open").click((e: Event)=> {
@@ -213,17 +241,24 @@ $(function () {
                 alert(<any>e);
             };
             reader.onload = (e: Event)=> {
+                Name.Update(file.name);
+                Name.Show();
                 Editor.SetValue((<any>e.target).result);
             };
             reader.readAsText(file, 'utf-8');
         }
     });
 
-    $(window).on("beforeunload", (e: Event)=> {
-        DB.Save(fileName, Editor.GetValue());
+    $("#file-name").change(function(e: Event) {
+        Name.Update(this.value);
     });
 
-    if(DB.Exist(fileName)) {
-        Editor.SetValue(DB.Load(fileName));
+    $(window).on("beforeunload", (e: Event)=> {
+        //Name.Update($('#file-name').text());
+        DB.Save(Name.GetName(), Editor.GetValue());
+    });
+
+    if(DB.Exist(Name.GetName())) {
+        Editor.SetValue(DB.Load(Name.GetName()));
     }
 });
