@@ -218,6 +218,7 @@ $(function () {
     $("#clear").click(function (e) {
         Output.Clear();
         Output.Prompt();
+        Editor.RemoveAllErrorLine();
     });
 
     $("#compile").click(function (e) {

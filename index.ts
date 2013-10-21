@@ -221,6 +221,7 @@ $(function () {
     $("#clear").click((e: Event)=> {
         Output.Clear();
         Output.Prompt();
+        Editor.RemoveAllErrorLine();
     });
 
     $("#compile").click((e: Event)=> {
