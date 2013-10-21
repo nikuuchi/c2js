@@ -26,7 +26,7 @@ module C2JS {
                 indentUnit: 4,
                 mode: "text/x-csrc"
             });
-            this.SetValue("#include <stdio.h>\n\nint main(int argc, char* argv[]) {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
+            this.ResetHelloWorld();
             this.editor.setSize(this.size.width, this.size.height);
         }
 
@@ -68,11 +68,15 @@ module C2JS {
             }
         }
 
-        RemoveAllErrorLine(){
+        RemoveAllErrorLine(): void {
             for(var i = 0; i < this.markedErrorLines.length; ++i){
                 this.editor.removeLineClass(this.markedErrorLines[i], "text", "errorLine");
             }
             this.markedErrorLines = [];
+        }
+
+        ResetHelloWorld(): void {
+            this.SetValue("#include <stdio.h>\n\nint main() {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
         }
     }
 
@@ -323,6 +327,12 @@ $(function () {
 
     $("#file-name").change(function(e: Event) {
         Name.SetName(this.value);
+    });
+
+    $("#reset").click(function(e: Event) {
+        if(confirm("Your changes will be lost. ")) {
+            Editor.ResetHelloWorld();
+        }
     });
 
     $(window).on("beforeunload", (e: Event)=> {

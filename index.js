@@ -18,7 +18,7 @@ var C2JS;
                 indentUnit: 4,
                 mode: "text/x-csrc"
             });
-            this.SetValue("#include <stdio.h>\n\nint main(int argc, char* argv[]) {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
+            this.ResetHelloWorld();
             this.editor.setSize(this.size.width, this.size.height);
         }
         Editor.prototype.OnChange = function (callback) {
@@ -64,6 +64,10 @@ var C2JS;
                 this.editor.removeLineClass(this.markedErrorLines[i], "text", "errorLine");
             }
             this.markedErrorLines = [];
+        };
+
+        Editor.prototype.ResetHelloWorld = function () {
+            this.SetValue("#include <stdio.h>\n\nint main() {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
         };
         return Editor;
     })();
@@ -318,6 +322,12 @@ $(function () {
 
     $("#file-name").change(function (e) {
         Name.SetName(this.value);
+    });
+
+    $("#reset").click(function (e) {
+        if (confirm("Your changes will be lost. ")) {
+            Editor.ResetHelloWorld();
+        }
     });
 
     $(window).on("beforeunload", function (e) {
