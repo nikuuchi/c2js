@@ -84,6 +84,10 @@ module C2JS {
             this.$output.append(val + '<br>');
         }
 
+        PrintErrorLn(val: string): void {
+            this.$output.append('<span class="text-danger">' + val + '</span><br>');
+        }
+
         Prompt(): void {
             this.$output.append('$ ');
         }
@@ -140,8 +144,8 @@ module C2JS {
         }
     }
 
-    export function Compile(source, option, flag, Context, callback) {
-        if(flag) {
+    export function Compile(source, option, isCached, Context, callback, onerror) {
+        if(isCached) {
             $.ajax({
                 type: "POST",
                 url: "cgi-bin/compile.cgi",
@@ -149,7 +153,7 @@ module C2JS {
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 success: callback,
-                error: function() { alert("error"); }
+                error: onerror
             });
         } else {
             callback(Context);
@@ -224,20 +228,35 @@ $(function () {
         Editor.RemoveAllErrorLine();
     });
 
+    var DisableUI = () => {
+        $("#file-name").attr("disabled", "disabled");
+        $("#open").addClass("disabled");
+        $("#save").addClass("disabled");
+        $("#clear").addClass("disabled");
+        $("#compile").addClass("disabled");
+        Editor.Disable();
+    }
+    var EnableUI = () => {
+        $("#file-name").removeAttr("disabled");
+        $("#open").removeClass("disabled");
+        $("#save").removeClass("disabled");
+        $("#clear").removeClass("disabled");
+        $("#compile").removeClass("disabled");
+        Editor.Enable();
+    }
+
     $("#compile").click((e: Event)=> {
         var src = Editor.GetValue();
         var opt = '-m'; //TODO
         Output.PrintLn('gcc '+Name.GetName()+' -o '+Name.GetBaseName());
-        $("#compile").addClass("disabled");
-        Editor.Disable();
+        DisableUI();
         Editor.RemoveAllErrorLine();
 
         C2JS.Compile(src, opt, changeFlag, Context, function(res){
             try{
-                Editor.Enable();
                 changeFlag = false;
                 if(res == null) {
-                    Output.PrintLn('Sorry, the server is something wrong.');
+                    Output.PrintErrorLn('Sorry, the server is something wrong.');
                     return;
                 }
                 if(res.error.length > 0) {
@@ -261,8 +280,11 @@ $(function () {
                     Context.source = null;
                 }
             }finally{
-                $("#compile").removeClass("disabled");
+                EnableUI();
             }
+        }, ()=>{
+            Output.PrintErrorLn('Sorry, the server is something wrong.');
+            EnableUI();
         });
     });
 

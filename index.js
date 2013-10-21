@@ -77,6 +77,10 @@ var C2JS;
             this.$output.append(val + '<br>');
         };
 
+        Output.prototype.PrintErrorLn = function (val) {
+            this.$output.append('<span class="text-danger">' + val + '</span><br>');
+        };
+
         Output.prototype.Prompt = function () {
             this.$output.append('$ ');
         };
@@ -134,8 +138,8 @@ var C2JS;
     })();
     C2JS.SourceDB = SourceDB;
 
-    function Compile(source, option, flag, Context, callback) {
-        if (flag) {
+    function Compile(source, option, isCached, Context, callback, onerror) {
+        if (isCached) {
             $.ajax({
                 type: "POST",
                 url: "cgi-bin/compile.cgi",
@@ -143,9 +147,7 @@ var C2JS;
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 success: callback,
-                error: function () {
-                    alert("error");
-                }
+                error: onerror
             });
         } else {
             callback(Context);
@@ -221,20 +223,35 @@ $(function () {
         Editor.RemoveAllErrorLine();
     });
 
+    var DisableUI = function () {
+        $("#file-name").attr("disabled", "disabled");
+        $("#open").addClass("disabled");
+        $("#save").addClass("disabled");
+        $("#clear").addClass("disabled");
+        $("#compile").addClass("disabled");
+        Editor.Disable();
+    };
+    var EnableUI = function () {
+        $("#file-name").removeAttr("disabled");
+        $("#open").removeClass("disabled");
+        $("#save").removeClass("disabled");
+        $("#clear").removeClass("disabled");
+        $("#compile").removeClass("disabled");
+        Editor.Enable();
+    };
+
     $("#compile").click(function (e) {
         var src = Editor.GetValue();
         var opt = '-m';
         Output.PrintLn('gcc ' + Name.GetName() + ' -o ' + Name.GetBaseName());
-        $("#compile").addClass("disabled");
-        Editor.Disable();
+        DisableUI();
         Editor.RemoveAllErrorLine();
 
         C2JS.Compile(src, opt, changeFlag, Context, function (res) {
             try  {
-                Editor.Enable();
                 changeFlag = false;
                 if (res == null) {
-                    Output.PrintLn('Sorry, the server is something wrong.');
+                    Output.PrintErrorLn('Sorry, the server is something wrong.');
                     return;
                 }
                 if (res.error.length > 0) {
@@ -258,8 +275,11 @@ $(function () {
                     Context.source = null;
                 }
             } finally {
-                $("#compile").removeClass("disabled");
+                EnableUI();
             }
+        }, function () {
+            Output.PrintErrorLn('Sorry, the server is something wrong.');
+            EnableUI();
         });
     });
 
