@@ -72,25 +72,25 @@ var C2JS;
     var FileName = (function () {
         function FileName() {
             this.defaultNameKey = 'filename:defaultNameKey';
-            this.name = localStorage.getItem(this.defaultNameKey);
-            if (this.name == null) {
-                this.name = 'Program.c';
-            }
+            var name = localStorage.getItem(this.defaultNameKey) || "program.c";
+            this.SetName(name);
         }
         FileName.prototype.Show = function () {
-            $("#file-name").text(this.name);
+            $("#file-name").val(this.name);
         };
 
-        FileName.prototype.Update = function (text) {
-            this.name = text;
+        FileName.prototype.SetName = function (text) {
+            this.name = text.replace(/\..*/, ".c");
             localStorage.setItem(this.defaultNameKey, this.name);
+            document.title = "Aspen - " + this.name;
+            $("#file-name").val(this.name);
         };
 
         FileName.prototype.GetName = function () {
             return this.name;
         };
 
-        FileName.prototype.GetNameWithoutExtension = function () {
+        FileName.prototype.GetBaseName = function () {
             return this.name.replace(/\..*/, "");
         };
         return FileName;
@@ -183,7 +183,7 @@ $(function () {
     $("#compile").click(function (e) {
         var src = Editor.GetValue();
         var opt = '-m';
-        Output.PrintLn('gcc ' + Name.GetName() + ' -o ' + Name.GetNameWithoutExtension());
+        Output.PrintLn('gcc ' + Name.GetName() + ' -o ' + Name.GetBaseName());
         $("#compile").addClass("disabled");
         Editor.Disable();
 
@@ -196,14 +196,14 @@ $(function () {
                 return;
             }
             if (res.error.length > 0) {
-                Output.PrintLn(C2JS.CreateOutputView(res.error, Name.GetNameWithoutExtension()));
+                Output.PrintLn(C2JS.CreateOutputView(res.error, Name.GetBaseName()));
             }
             Output.Prompt();
 
             Context.error = res.error;
             if (!res.error.match("error:")) {
                 Context.source = res.source;
-                Output.PrintLn('./' + Name.GetNameWithoutExtension());
+                Output.PrintLn('./' + Name.GetBaseName());
                 var Module = { print: function (x) {
                         Output.PrintLn(x);
                     } };
@@ -229,15 +229,23 @@ $(function () {
         $("#file-open-dialog").click();
     });
 
+    var endsWith = function (str, suffix) {
+        return str.indexOf(suffix, str.length - suffix.length) !== -1;
+    };
+
     $("#file-open-dialog").change(function (e) {
         var file = this.files[0];
         if (file) {
+            if (!endsWith(file.name, ".c")) {
+                alert("Unsupported file type.\nplease select '*.c' file.");
+                return;
+            }
             var reader = new FileReader();
             reader.onerror = function (e) {
                 alert(e);
             };
             reader.onload = function (e) {
-                Name.Update(file.name);
+                Name.SetName(file.name);
                 Name.Show();
                 Editor.SetValue((e.target).result);
             };
@@ -246,7 +254,7 @@ $(function () {
     });
 
     $("#file-name").change(function (e) {
-        Name.Update(this.value);
+        Name.SetName(this.value);
     });
 
     $(window).on("beforeunload", function (e) {

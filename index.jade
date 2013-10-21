@@ -5,47 +5,49 @@ mixin css(path)
 !!! 5
 html
   head
+    meta(name="viewport", content="initial-scale=1.0,width=device-width,user-scalable=no")
     title Aspen
     +css('lib/codemirror/codemirror.css')
     +css('lib/bootstrap.min.css')
   body(style="padding: 30px;")
-    // Wrap all page content here
-    #wrap
-      .container
-        .navbar.navbar-default
-            .navbar-header
-              button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
-                span.icon-bar
-                span.icon-bar
-                span.icon-bar
-              a.navbar-brand Aspen
-            .navbar-collapse
-              ul.nav.navbar-nav
-                li.active
-                  a(href='#') Playground
-                li
-                  a(href='#sample') Sample
-                li
-                  a(href='#slide') Slide
-                li
-                  a(href='#contact') Contact
-        h2
-            textarea#file-name(rows='1', cols='15', style='resize: none;' ) program.c
+    .container(style="width: 960px;")
+      //.navbar.navbar-default
+        .navbar-header
+          button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          a.navbar-brand Aspen
+        .navbar-collapse
+          ul.nav.navbar-nav
+            li.active
+              a(href='#') Playground
+            li
+              a(href='#sample') Sample
+            li
+              a(href='#slide') Slide
+            li
+              a(href='#contact') Contact
+      p
+        .row
+          .col-lg-4
+            input.form-control#file-name(type="text") program.c
+          .col-lg-8
             .pull-right
-                input#file-open-dialog(type='file', style='display:none;')
-                a#open.btn.btn-default Open
-                | &nbsp;
-                a#save.btn.btn-default Save
-        p
-          textarea#editor(rows="20", style="width:100%;")
-        .panel
-          .panel-heading
-            h4 Output
-                | &nbsp;
-                a#compile.btn.btn-primary Compile & run
-                | &nbsp;
-                a#clear.btn.btn-default Clear
-          #output.panel-body
+              input#file-open-dialog(type='file', style='display:none;', accept="text/c")
+              a#open.btn.btn-default Open
+              | &nbsp;
+              a#save.btn.btn-default Save
+      p
+        textarea#editor(rows="20", style="width:100%;")
+      .panel
+        .panel-heading
+          h4 Output
+              | &nbsp;
+              a#compile.btn.btn-primary Compile & run
+              | &nbsp;
+              a#clear.btn.btn-default Clear
+        #output.panel-body
     // Include all compiled plugins (below), or include individual files as needed
     +js('lib/jquery.min.js')
     +js('lib/bootstrap.min.js')
