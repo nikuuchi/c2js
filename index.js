@@ -11,6 +11,7 @@ var C2JS;
 
     var Editor = (function () {
         function Editor($editor) {
+            this.markedErrorLines = [];
             this.size = new Size($editor.width(), $editor.height());
             this.editor = CodeMirror.fromTextArea($editor[0], {
                 lineNumbers: true,
@@ -45,6 +46,24 @@ var C2JS;
         Editor.prototype.Enable = function () {
             this.editor.setOption("readOnly", false);
             $(".CodeMirror-scroll").css({ "background-color": "#fff" });
+        };
+
+        Editor.prototype.SetErrorLine = function (line) {
+            this.editor.addLineClass(line - 1, "text", "errorLine");
+            this.markedErrorLines.push(line - 1);
+        };
+
+        Editor.prototype.SetErrorLines = function (lines) {
+            for (var i = 0; i < lines.length; ++i) {
+                this.SetErrorLine(lines[i]);
+            }
+        };
+
+        Editor.prototype.RemoveAllErrorLine = function () {
+            for (var i = 0; i < this.markedErrorLines.length; ++i) {
+                this.editor.removeLineClass(this.markedErrorLines[i], "text", "errorLine");
+            }
+            this.markedErrorLines = [];
         };
         return Editor;
     })();
@@ -134,6 +153,21 @@ var C2JS;
     }
     C2JS.Compile = Compile;
 
+    function Run(source, ctx, out) {
+        ctx.source = source;
+        var Module = { print: function (x) {
+                out.PrintLn(x);
+            } };
+        try  {
+            var exe = new Function("Module", source);
+            exe(Module);
+        } catch (e) {
+            out.PrintLn(e);
+        }
+        out.Prompt();
+    }
+    C2JS.Run = Run;
+
     function TerminalColor(text) {
         return text.replace(/\[31m(.*)\[0m/g, '<span class="text-danger">$1</span>');
     }
@@ -156,14 +190,20 @@ var C2JS;
     C2JS.CreateOutputView = CreateOutputView;
 })(C2JS || (C2JS = {}));
 
+var Aspen = {};
+
 $(function () {
     var Editor = new C2JS.Editor($("#editor"));
     var Output = new C2JS.Output($("#output"));
     var DB = new C2JS.SourceDB();
-
     var Context = {};
-
     var Name = new C2JS.FileName();
+
+    Aspen.Editor = Editor;
+    Aspen.Output = Output;
+    Aspen.Source = DB;
+    Aspen.Context = Context;
+    Aspen.FileName = Name;
 
     var changeFlag = true;
     Editor.OnChange(function (e) {
@@ -186,36 +226,38 @@ $(function () {
         Output.PrintLn('gcc ' + Name.GetName() + ' -o ' + Name.GetBaseName());
         $("#compile").addClass("disabled");
         Editor.Disable();
+        Editor.RemoveAllErrorLine();
 
         C2JS.Compile(src, opt, changeFlag, Context, function (res) {
-            Editor.Enable();
-            changeFlag = false;
-            $("#compile").removeClass("disabled");
-            if (res == null) {
-                Output.PrintLn('Sorry, server is something wrong.');
-                return;
-            }
-            if (res.error.length > 0) {
-                Output.PrintLn(C2JS.CreateOutputView(res.error, Name.GetBaseName()));
-            }
-            Output.Prompt();
-
-            Context.error = res.error;
-            if (!res.error.match("error:")) {
-                Context.source = res.source;
-                Output.PrintLn('./' + Name.GetBaseName());
-                var Module = { print: function (x) {
-                        Output.PrintLn(x);
-                    } };
-                try  {
-                    var exe = new Function("Module", res.source);
-                    exe(Module);
-                } catch (e) {
-                    Output.PrintLn(e);
+            try  {
+                Editor.Enable();
+                changeFlag = false;
+                if (res == null) {
+                    Output.PrintLn('Sorry, the server is something wrong.');
+                    return;
+                }
+                if (res.error.length > 0) {
+                    Output.PrintLn(C2JS.CreateOutputView(res.error, Name.GetBaseName()));
+                    var errorLineNumbers = [];
+                    jQuery.each(res.error.split(".c"), (function (k, v) {
+                        var match = v.match(/:(\d+):\d+:\s+error/);
+                        if (match && match[1]) {
+                            errorLineNumbers.push(match[1]);
+                        }
+                    }));
+                    Editor.SetErrorLines(errorLineNumbers);
                 }
                 Output.Prompt();
-            } else {
-                Context.source = null;
+
+                Context.error = res.error;
+                if (!res.error.match("error:")) {
+                    Output.PrintLn('./' + Name.GetBaseName());
+                    C2JS.Run(res.source, Context, Output);
+                } else {
+                    Context.source = null;
+                }
+            } finally {
+                $("#compile").removeClass("disabled");
             }
         });
     });
