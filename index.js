@@ -140,9 +140,10 @@ var C2JS;
                 }
             }
         }
-        FileCollection.prototype.Append = function (NewFile) {
+        FileCollection.prototype.Append = function (NewFile, callback) {
             this.FileModels.push(NewFile);
-            this.UI.append($('#file-list-template').tmpl([NewFile]));
+            this.UI.prepend($('#file-list-template').tmpl([NewFile]));
+            $("#" + NewFile.GetBaseName()).click(callback);
         };
 
         FileCollection.prototype.GetIndexOf = function (BaseName) {
@@ -269,11 +270,13 @@ $(function () {
         DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
     });
 
-    Files.Show(function (e) {
+    var ChangeCurrentFile = function (e) {
         Files.SetCurrent((e.srcElement).id);
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
         //console.log(e);
-    });
+    };
+
+    Files.Show(ChangeCurrentFile);
 
     Output.Prompt();
 
@@ -366,11 +369,22 @@ $(function () {
             reader.onload = function (e) {
                 //FIXME current file
                 var fileModel = new C2JS.FileModel(file.name);
-                Files.Append(fileModel);
+                Files.Append(fileModel, ChangeCurrentFile);
                 Editor.SetValue((e.target).result);
             };
             reader.readAsText(file, 'utf-8');
         }
+    });
+
+    $("#create-file").click(function (e) {
+        var filename = prompt("Input new file name");
+        if (filename.match(/.*\.c/) == null) {
+            filename += '.c';
+        }
+        var file = new C2JS.FileModel(filename);
+        Files.Append(file, ChangeCurrentFile);
+        Files.SetCurrent(file.GetBaseName());
+        Editor.ResetHelloWorld();
     });
 
     //$("#file-name").change(function(e: Event) {

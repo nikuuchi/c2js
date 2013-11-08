@@ -150,9 +150,10 @@ module C2JS {
             }
         }
 
-        Append(NewFile: FileModel) {
+        Append(NewFile: FileModel, callback: (e:Event) => void) {
             this.FileModels.push(NewFile);
-            this.UI.append($('#file-list-template').tmpl([NewFile]));
+            this.UI.prepend($('#file-list-template').tmpl([NewFile]));
+            $("#" + NewFile.GetBaseName()).click(callback);
         }
 
         private GetIndexOf(BaseName: string): number {
@@ -277,11 +278,13 @@ $(function () {
         DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
     });
 
-    Files.Show((e: Event) => {
+    var ChangeCurrentFile = (e: Event) => {
         Files.SetCurrent((<any>e.srcElement).id);
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
         //console.log(e);
-    });
+    };
+
+    Files.Show(ChangeCurrentFile);
 
     Output.Prompt();
 
@@ -374,13 +377,23 @@ $(function () {
             reader.onload = (e: Event)=> {
                 //FIXME current file
                 var fileModel = new C2JS.FileModel(file.name);
-                Files.Append(fileModel);
+                Files.Append(fileModel, ChangeCurrentFile);
                 Editor.SetValue((<any>e.target).result);
             };
             reader.readAsText(file, 'utf-8');
         }
     });
 
+    $("#create-file").click((e: Event) => {
+        var filename = prompt("Input new file name");
+        if(filename.match(/.*\.c/) == null) {
+            filename += '.c';
+        }
+        var file = new C2JS.FileModel(filename);
+        Files.Append(file, ChangeCurrentFile);
+        Files.SetCurrent(file.GetBaseName());
+        Editor.ResetHelloWorld();
+    });
     //$("#file-name").change(function(e: Event) {
     //    FileModel.SetName(this.value);
     //});
