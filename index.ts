@@ -1,4 +1,4 @@
-///<reference path='d.ts/jquery.d.ts'/>
+///<reference path='d.ts/jquery_plugins.d.ts'/>
 
 declare var CodeMirror: any;
 declare function saveAs(data :Blob, filename: String): void;
@@ -102,33 +102,87 @@ module C2JS {
 
     }
 
-    export class FileName {
-        private name: string;
-        private defaultNameKey: string;
-        constructor() {
-            this.defaultNameKey = 'filename:defaultNameKey';
-            var name = localStorage.getItem(this.defaultNameKey) || "program.c";
-            this.SetName(name);
-        }
-
-        Show(): void {
-            $("#file-name").val(this.name);
+    export class FileModel {
+        BaseName: string;
+        constructor(public Name: string) {
+            this.BaseName = Name.replace(/\..*/, "");
         }
 
         SetName(text: string): void {
-            this.name = text.replace(/\..*/, ".c");
-            localStorage.setItem(this.defaultNameKey, this.name);
-            document.title = "Aspen - " + this.name;
-            $("#file-name").val(this.name);
+            this.Name = text.replace(/\..*/, ".c");
+            this.BaseName = this.Name.replace(/\..*/, "");
+            //localStorage.setItem(this.defaultNameKey, this.name);
+            //document.title = "Aspen - " + this.name;
+            //$("#file-name").val(this.name);
         }
 
         GetName(): string {
-            return this.name;
+            return this.Name;
         }
 
         GetBaseName(): string {
-            return this.name.replace(/\..*/, "");
+            return this.BaseName;
         }
+    }
+
+    export class FileCollection {
+        private FileModels: FileModel[] = [];
+        private UI: JQuery;
+        private ActiveFileName: string;
+        private ActiveFileIndex: number;
+        private defaultNameKey: string = 'filename:defaultNameKey';
+
+        constructor() {
+            this.UI = $('#file-name-lists');
+            this.ActiveFileName = localStorage.getItem(this.defaultNameKey) || "program.c";
+            this.ActiveFileIndex = 0;
+
+            for(var i = 0; i < localStorage.length; i++) {
+                var key = localStorage.key(i);
+                if(key == this.defaultNameKey) {
+                    continue;
+                }
+                var file = new FileModel(localStorage.key(i));
+                var index = this.FileModels.push(file) - 1;
+                if(key == this.ActiveFileName) {
+                    this.ActiveFileIndex = index;
+                }
+            }
+        }
+
+        Append(NewFile: FileModel) {
+            this.FileModels.push(NewFile);
+            this.UI.append($('#file-list-template').tmpl([NewFile]));
+        }
+
+        private GetIndexOf(BaseName: string): number {
+            for(var i = 0; i < this.FileModels.length; i++) {
+                if(this.FileModels[i].GetBaseName() == BaseName) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        GetCurrent(): FileModel {
+            return this.FileModels[this.ActiveFileIndex];
+        }
+
+        SetCurrent(BaseName: string): void {
+            $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).removeClass('active');
+            this.ActiveFileName = BaseName + '.c';
+            this.ActiveFileIndex = this.GetIndexOf(BaseName);
+            $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).addClass('active');
+        }
+
+        Show(callback: (e:Event)=>void): void {
+            this.UI.prepend($('#file-list-template').tmpl(this.FileModels));
+            $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).addClass('active');
+            for(var i = 0; i < this.FileModels.length; i++) {
+                $("#" + this.FileModels[i].GetBaseName()).click(callback);
+            }
+        }
+
     }
 
     export class SourceDB {
@@ -146,6 +200,7 @@ module C2JS {
         Exist(fileName: string): boolean {
             return localStorage.getItem(fileName) != null;
         }
+
     }
 
     export function Compile(source, option, isCached, Context, callback, onerror) {
@@ -160,7 +215,7 @@ module C2JS {
                 error: onerror
             });
         } else {
-            callback(Context);
+            setTimeout(callback,200,Context);
         }
     }
 
@@ -208,26 +263,30 @@ $(function () {
     var Output: C2JS.Output   = new C2JS.Output($("#output"));
     var DB:     C2JS.SourceDB = new C2JS.SourceDB();
     var Context: any = {}; //TODO refactor C2JS.Response
-    var Name: C2JS.FileName = new C2JS.FileName();
+    var Files: C2JS.FileCollection = new C2JS.FileCollection();
 
     Aspen.Editor = Editor;
     Aspen.Output = Output;
     Aspen.Source = DB;
     Aspen.Context = Context;
-    Aspen.FileName = Name;
+    Aspen.Files = Files;
 
     var changeFlag = true;
     Editor.OnChange((e: Event)=> {
         changeFlag = true;
-        DB.Save(Name.GetName(), Editor.GetValue());
+        DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
     });
 
-    Name.Show();
+    Files.Show((e: Event) => {
+        Files.SetCurrent((<any>e.srcElement).id);
+        Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
+        //console.log(e);
+    });
 
     Output.Prompt();
 
     var DisableUI = () => {
-        $("#file-name").attr("disabled", "disabled");
+        //$("#file-name").attr("disabled", "disabled"); //FIXME tab disable
         $("#open").addClass("disabled");
         $("#save").addClass("disabled");
         $("#compile").addClass("disabled");
@@ -235,7 +294,7 @@ $(function () {
     }
 
     var EnableUI = () => {
-        $("#file-name").removeAttr("disabled");
+        //$("#file-name").removeAttr("disabled"); //FIXME tab enable
         $("#open").removeClass("disabled");
         $("#save").removeClass("disabled");
         $("#compile").removeClass("disabled");
@@ -244,10 +303,11 @@ $(function () {
 
     $("#compile").click((e: Event)=> {
         var src = Editor.GetValue();
+        var file = Files.GetCurrent();
         var opt = '-m'; //TODO
         Output.Clear();
         Output.Prompt();
-        Output.PrintLn('gcc '+Name.GetName()+' -o '+Name.GetBaseName());
+        Output.PrintLn('gcc '+file.GetName()+' -o '+file.GetBaseName());
         DisableUI();
         Editor.RemoveAllErrorLine();
 
@@ -259,7 +319,7 @@ $(function () {
                     return;
                 }
                 if(res.error.length > 0) {
-                    Output.PrintLn(C2JS.CreateOutputView(res.error, Name.GetBaseName()));
+                    Output.PrintLn(C2JS.CreateOutputView(res.error, file.GetBaseName()));
                     var errorLineNumbers = [];
                     jQuery.each(res.error.split(".c"), (function(k, v){
                         var match = v.match(/:(\d+):\d+:\s+error/);
@@ -273,7 +333,7 @@ $(function () {
 
                 Context.error = res.error;
                 if(!res.error.match("error:")) {
-                    Output.PrintLn('./' + Name.GetBaseName());
+                    Output.PrintLn('./' + file.GetBaseName());
                     C2JS.Run(res.source, Context, Output);
                 } else {
                     Context.source = null;
@@ -289,7 +349,7 @@ $(function () {
 
     $("#save").click((e: Event)=> {
         var blob = new Blob([Editor.GetValue()], {type: 'text/plain; charset=UTF-8'});
-        saveAs(blob, Name.GetName());
+        saveAs(blob, Files.GetCurrent().GetName());
     });
 
     $("#open").click((e: Event)=> {
@@ -312,29 +372,24 @@ $(function () {
                 alert(<any>e);
             };
             reader.onload = (e: Event)=> {
-                Name.SetName(file.name);
-                Name.Show();
+                //FIXME current file
+                var fileModel = new C2JS.FileModel(file.name);
+                Files.Append(fileModel);
                 Editor.SetValue((<any>e.target).result);
             };
             reader.readAsText(file, 'utf-8');
         }
     });
 
-    $("#file-name").change(function(e: Event) {
-        Name.SetName(this.value);
-    });
-
-    $("#reset").click(function(e: Event) {
-        if(confirm("Your changes will be lost. ")) {
-            Editor.ResetHelloWorld();
-        }
-    });
+    //$("#file-name").change(function(e: Event) {
+    //    FileModel.SetName(this.value);
+    //});
 
     $(window).on("beforeunload", (e: Event)=> {
-        DB.Save(Name.GetName(), Editor.GetValue());
+        DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
     });
 
-    if(DB.Exist(Name.GetName())) {
-        Editor.SetValue(DB.Load(Name.GetName()));
+    if(DB.Exist(Files.GetCurrent().GetName())) {
+        Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
     }
 });

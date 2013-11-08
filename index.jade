@@ -1,7 +1,11 @@
 mixin js(path)
-    script(type='text/javascript', src=path)
+  script(type='text/javascript', src=path)
 mixin css(path)
-    link(rel='stylesheet', href=path)
+  link(rel='stylesheet', href=path)
+mixin template(id)
+  script(id=id, type="text/x-jquery-tmpl")
+    block
+
 !!! 5
 html
   head
@@ -42,25 +46,17 @@ html
             span.glyphicon.glyphicon-play
             | &nbsp;
             | Run
-      //p
-        .row
-          .col-lg-4
-            input.form-control#file-name(type="text") program.c
-          .col-lg-8
-            .pull-right
-              input#file-open-dialog(type='file', style='display:none;', accept="text/c")
-              a#new-file.btn.btn-danger New File
-              | &nbsp;
+      +template('file-list-template')
+        li
+          a(href='#',id='${BaseName}') ${Name}
+          //a(href='#', id='close${BaseName}')
+            span.glyphicon.glyphicon-remove
       p
         ul#file-name-lists.nav.nav-tabs
-          li.active
-            a.file-name(href='#') program.c
-          li
-            a.file-name(href='#') program2.c
           li
             a#create-file(href='#')
               span.glyphicon.glyphicon-plus
-          li
+          li.pull-right
             a#delete-file(href='#')
               span.glyphicon.glyphicon-remove
       p
@@ -77,6 +73,7 @@ html
         #output.panel-body
     // Include all compiled plugins (below), or include individual files as needed
     +js('lib/jquery.min.js')
+    +js('lib/jquery.tmpl.min.js')
     +js('lib/bootstrap/js/bootstrap.min.js')
     +js('lib/codemirror/codemirror.js')
     +js('lib/codemirror/display/placeholder.js')
