@@ -9,6 +9,7 @@ html
     title Aspen
     +css('lib/codemirror/codemirror.css')
     +css('lib/bootstrap/css/bootstrap.min.css')
+    +css('index.css')
     style.
       .errorLine {
         background: #f2dede !important;
@@ -50,6 +51,18 @@ html
               input#file-open-dialog(type='file', style='display:none;', accept="text/c")
               a#new-file.btn.btn-danger New File
               | &nbsp;
+      p
+        ul#file-name-lists.nav.nav-tabs
+          li.active
+            a.file-name(href='#') program.c
+          li
+            a.file-name(href='#') program2.c
+          li
+            a#create-file(href='#')
+              span.glyphicon.glyphicon-plus
+          li
+            a#delete-file(href='#')
+              span.glyphicon.glyphicon-remove
       p
         textarea#editor(rows="20", style="width:100%;")
       .panel.panel-default
