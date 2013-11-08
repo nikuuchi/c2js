@@ -164,6 +164,7 @@ var C2JS;
             this.ActiveFileName = BaseName + '.c';
             this.ActiveFileIndex = this.GetIndexOf(BaseName);
             $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).addClass('active');
+            localStorage.setItem(this.defaultNameKey, this.ActiveFileName);
         };
 
         FileCollection.prototype.Show = function (callback) {
