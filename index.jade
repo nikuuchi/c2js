@@ -8,55 +8,63 @@ html
     meta(name="viewport", content="initial-scale=1.0,width=device-width,user-scalable=no")
     title Aspen
     +css('lib/codemirror/codemirror.css')
-    +css('lib/bootstrap.min.css')
+    +css('lib/bootstrap/css/bootstrap.min.css')
     style.
       .errorLine {
         background: #f2dede !important;
       }
   body(style="padding: 30px;")
+    input#file-open-dialog(type='file', style='display:none;', accept=".c")
     .container(style="width: 960px;")
-      //.navbar.navbar-default
+      .navbar.navbar-default
         .navbar-header
           button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
             span.icon-bar
             span.icon-bar
             span.icon-bar
           a.navbar-brand Aspen
-        .navbar-collapse
-          ul.nav.navbar-nav
-            li.active
-              a(href='#') Playground
-            li
-              a(href='#sample') Sample
-            li
-              a(href='#slide') Slide
-            li
-              a(href='#contact') Contact
-      p
+        .navbar-collapse.pull-right
+          button#open.btn.navbar-btn.btn-default(type='button')
+            | &nbsp;
+            span.glyphicon.glyphicon-folder-open
+            | &nbsp;
+            | Open
+          | &nbsp;
+          button#save.btn.navbar-btn.btn-default(type='button')
+            | &nbsp;
+            span.glyphicon.glyphicon-floppy-save
+            | &nbsp;
+            | Save
+          | &nbsp;
+          button#compile.btn.navbar-btn.btn-primary(type='button')
+            | &nbsp;
+            span.glyphicon.glyphicon-play
+            | &nbsp;
+            | Run
+      //p
         .row
           .col-lg-4
             input.form-control#file-name(type="text") program.c
           .col-lg-8
             .pull-right
               input#file-open-dialog(type='file', style='display:none;', accept="text/c")
-              a#reset.btn.btn-danger Reset
+              a#new-file.btn.btn-danger New File
               | &nbsp;
-              a#open.btn.btn-default Open
-              | &nbsp;
-              a#save.btn.btn-default Save
       p
         textarea#editor(rows="20", style="width:100%;")
       .panel
         .panel-heading
           h4 Output
               | &nbsp;
-              a#compile.btn.btn-primary Compile & run
-              | &nbsp;
-              a#clear.btn.btn-default Clear
+              a#compile.btn.btn-primary
+                | &nbsp;
+                span.glyphicon.glyphicon-play
+                | &nbsp;
+                | Run
         #output.panel-body
     // Include all compiled plugins (below), or include individual files as needed
     +js('lib/jquery.min.js')
-    +js('lib/bootstrap.min.js')
+    +js('lib/bootstrap/js/bootstrap.min.js')
     +js('lib/codemirror/codemirror.js')
     +js('lib/codemirror/display/placeholder.js')
     +js('lib/codemirror/mode/clike/clike.js')

@@ -226,25 +226,18 @@ $(function () {
 
     Output.Prompt();
 
-    $("#clear").click((e: Event)=> {
-        Output.Clear();
-        Output.Prompt();
-        Editor.RemoveAllErrorLine();
-    });
-
     var DisableUI = () => {
         $("#file-name").attr("disabled", "disabled");
         $("#open").addClass("disabled");
         $("#save").addClass("disabled");
-        $("#clear").addClass("disabled");
         $("#compile").addClass("disabled");
         Editor.Disable();
     }
+
     var EnableUI = () => {
         $("#file-name").removeAttr("disabled");
         $("#open").removeClass("disabled");
         $("#save").removeClass("disabled");
-        $("#clear").removeClass("disabled");
         $("#compile").removeClass("disabled");
         Editor.Enable();
     }
@@ -252,6 +245,8 @@ $(function () {
     $("#compile").click((e: Event)=> {
         var src = Editor.GetValue();
         var opt = '-m'; //TODO
+        Output.Clear();
+        Output.Prompt();
         Output.PrintLn('gcc '+Name.GetName()+' -o '+Name.GetBaseName());
         DisableUI();
         Editor.RemoveAllErrorLine();
