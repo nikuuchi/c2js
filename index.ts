@@ -147,6 +147,11 @@ module C2JS {
                     this.ActiveFileIndex = index;
                 }
             }
+            if(this.FileModels.length == 0) {
+                var file = new FileModel(this.ActiveFileName);
+                var index = this.FileModels.push(file) - 1;
+                this.ActiveFileIndex = index;
+            }
         }
 
         Append(NewFile: FileModel, callback: (e:Event) => void) {
@@ -208,9 +213,11 @@ module C2JS {
             if(i < 0) {
                 i = 0;
             }
-            this.SetCurrent(this.FileModels[i].GetBaseName());
-            this.RemoveByBaseName(BaseName);
-            this.AddActiveClass();
+            if(this.FileModels.length > 1) {
+                this.SetCurrent(this.FileModels[i].GetBaseName());
+                this.RemoveByBaseName(BaseName);
+                this.AddActiveClass(); //FIXME for remove 0-th file
+            }
         }
 
     }

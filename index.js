@@ -135,6 +135,11 @@ var C2JS;
                     this.ActiveFileIndex = index;
                 }
             }
+            if (this.FileModels.length == 0) {
+                var file = new FileModel(this.ActiveFileName);
+                var index = this.FileModels.push(file) - 1;
+                this.ActiveFileIndex = index;
+            }
         }
         FileCollection.prototype.Append = function (NewFile, callback) {
             this.FileModels.push(NewFile);
@@ -195,9 +200,11 @@ var C2JS;
             if (i < 0) {
                 i = 0;
             }
-            this.SetCurrent(this.FileModels[i].GetBaseName());
-            this.RemoveByBaseName(BaseName);
-            this.AddActiveClass();
+            if (this.FileModels.length > 1) {
+                this.SetCurrent(this.FileModels[i].GetBaseName());
+                this.RemoveByBaseName(BaseName);
+                this.AddActiveClass();
+            }
         };
         return FileCollection;
     })();
