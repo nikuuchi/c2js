@@ -98,15 +98,11 @@ var C2JS;
 
     var FileModel = (function () {
         function FileModel(Name) {
-            this.Name = Name;
-            this.BaseName = Name.replace(/\..*/, "");
+            this.SetName(Name);
         }
         FileModel.prototype.SetName = function (text) {
             this.Name = text.replace(/\..*/, ".c");
             this.BaseName = this.Name.replace(/\..*/, "");
-            //localStorage.setItem(this.defaultNameKey, this.name);
-            //document.title = "Aspen - " + this.name;
-            //$("#file-name").val(this.name);
         };
 
         FileModel.prototype.GetName = function () {
@@ -159,11 +155,19 @@ var C2JS;
             return this.FileModels[this.ActiveFileIndex];
         };
 
-        FileCollection.prototype.SetCurrent = function (BaseName) {
+        FileCollection.prototype.RemoveActiveClass = function () {
             $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).removeClass('active');
+        };
+
+        FileCollection.prototype.AddActiveClass = function () {
+            $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).addClass('active');
+        };
+
+        FileCollection.prototype.SetCurrent = function (BaseName) {
+            this.RemoveActiveClass();
             this.ActiveFileName = BaseName + '.c';
             this.ActiveFileIndex = this.GetIndexOf(BaseName);
-            $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).addClass('active');
+            this.AddActiveClass();
             localStorage.setItem(this.defaultNameKey, this.ActiveFileName);
         };
 
@@ -173,6 +177,15 @@ var C2JS;
             for (var i = 0; i < this.FileModels.length; i++) {
                 $("#" + this.FileModels[i].GetBaseName()).click(callback);
             }
+        };
+
+        FileCollection.prototype.Remove = function (BaseName) {
+            var i = this.GetIndexOf(BaseName);
+            if (i == -1) {
+                return;
+            }
+            $($("#" + BaseName).parent().get(0)).remove();
+            //TODO delete
         };
         return FileCollection;
     })();
@@ -379,13 +392,25 @@ $(function () {
 
     $("#create-file").click(function (e) {
         var filename = prompt("Input new file name");
+        if (filename == null) {
+            return;
+        }
         if (filename.match(/.*\.c/) == null) {
             filename += '.c';
+        }
+        if (DB.Exist(filename)) {
+            alert("'" + filename + "' already exists.");
+            return;
         }
         var file = new C2JS.FileModel(filename);
         Files.Append(file, ChangeCurrentFile);
         Files.SetCurrent(file.GetBaseName());
         Editor.ResetHelloWorld();
+    });
+
+    $("#delete-file").click(function (e) {
+        Files.Remove((e.srcElement).id);
+        Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
     });
 
     //$("#file-name").change(function(e: Event) {

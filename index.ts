@@ -103,17 +103,16 @@ module C2JS {
     }
 
     export class FileModel {
-        BaseName: string;
-        constructor(public Name: string) {
-            this.BaseName = Name.replace(/\..*/, "");
+        private BaseName: string;
+        private Name: string;
+
+        constructor(Name: string) {
+            this.SetName(Name);
         }
 
         SetName(text: string): void {
             this.Name = text.replace(/\..*/, ".c");
             this.BaseName = this.Name.replace(/\..*/, "");
-            //localStorage.setItem(this.defaultNameKey, this.name);
-            //document.title = "Aspen - " + this.name;
-            //$("#file-name").val(this.name);
         }
 
         GetName(): string {
@@ -169,11 +168,19 @@ module C2JS {
             return this.FileModels[this.ActiveFileIndex];
         }
 
-        SetCurrent(BaseName: string): void {
+        private RemoveActiveClass(): void {
             $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).removeClass('active');
+        }
+
+        private AddActiveClass(): void {
+            $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).addClass('active');
+        }
+
+        SetCurrent(BaseName: string): void {
+            this.RemoveActiveClass();
             this.ActiveFileName = BaseName + '.c';
             this.ActiveFileIndex = this.GetIndexOf(BaseName);
-            $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).addClass('active');
+            this.AddActiveClass();
             localStorage.setItem(this.defaultNameKey, this.ActiveFileName);
         }
 
@@ -183,6 +190,15 @@ module C2JS {
             for(var i = 0; i < this.FileModels.length; i++) {
                 $("#" + this.FileModels[i].GetBaseName()).click(callback);
             }
+        }
+
+        Remove(BaseName: string): void {
+            var i = this.GetIndexOf(BaseName);
+            if(i == -1) {
+                return;
+            }
+            $($("#" + BaseName).parent().get(0)).remove();
+            //TODO delete
         }
 
     }
@@ -387,13 +403,25 @@ $(function () {
 
     $("#create-file").click((e: Event) => {
         var filename = prompt("Input new file name");
+        if(filename == null) {
+            return;
+        }
         if(filename.match(/.*\.c/) == null) {
             filename += '.c';
+        }
+        if(DB.Exist(filename)) {
+            alert("'"+filename+"' already exists.");
+            return;
         }
         var file = new C2JS.FileModel(filename);
         Files.Append(file, ChangeCurrentFile);
         Files.SetCurrent(file.GetBaseName());
         Editor.ResetHelloWorld();
+    });
+
+    $("#delete-file").click((e: Event) => {
+        Files.Remove((<any>e.srcElement).id);
+        Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
     });
     //$("#file-name").change(function(e: Event) {
     //    FileModel.SetName(this.value);
