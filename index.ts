@@ -192,13 +192,25 @@ module C2JS {
             }
         }
 
-        Remove(BaseName: string): void {
+        private RemoveByBaseName(BaseName: string): void {
             var i = this.GetIndexOf(BaseName);
             if(i == -1) {
                 return;
             }
             $($("#" + BaseName).parent().get(0)).remove();
-            //TODO delete
+            this.FileModels.splice(i,1);
+            localStorage.removeItem(BaseName + '.c');
+        }
+
+        Remove(BaseName: string): void {
+            var i = this.GetIndexOf(BaseName);
+            i--;
+            if(i < 0) {
+                i = 0;
+            }
+            this.SetCurrent(this.FileModels[i].GetBaseName());
+            this.RemoveByBaseName(BaseName);
+            this.AddActiveClass();
         }
 
     }
@@ -213,6 +225,10 @@ module C2JS {
 
         Load(fileName: string): string {
             return localStorage.getItem(fileName);
+        }
+
+        Delete(fileName: string): void {
+            return localStorage.removeItem(fileName);
         }
 
         Exist(fileName: string): boolean {
@@ -420,7 +436,7 @@ $(function () {
     });
 
     $("#delete-file").click((e: Event) => {
-        Files.Remove((<any>e.srcElement).id);
+        Files.Remove(Files.GetCurrent().GetBaseName());
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
     });
     //$("#file-name").change(function(e: Event) {

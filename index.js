@@ -179,13 +179,25 @@ var C2JS;
             }
         };
 
-        FileCollection.prototype.Remove = function (BaseName) {
+        FileCollection.prototype.RemoveByBaseName = function (BaseName) {
             var i = this.GetIndexOf(BaseName);
             if (i == -1) {
                 return;
             }
             $($("#" + BaseName).parent().get(0)).remove();
-            //TODO delete
+            this.FileModels.splice(i, 1);
+            localStorage.removeItem(BaseName + '.c');
+        };
+
+        FileCollection.prototype.Remove = function (BaseName) {
+            var i = this.GetIndexOf(BaseName);
+            i--;
+            if (i < 0) {
+                i = 0;
+            }
+            this.SetCurrent(this.FileModels[i].GetBaseName());
+            this.RemoveByBaseName(BaseName);
+            this.AddActiveClass();
         };
         return FileCollection;
     })();
@@ -200,6 +212,10 @@ var C2JS;
 
         SourceDB.prototype.Load = function (fileName) {
             return localStorage.getItem(fileName);
+        };
+
+        SourceDB.prototype.Delete = function (fileName) {
+            return localStorage.removeItem(fileName);
         };
 
         SourceDB.prototype.Exist = function (fileName) {
@@ -409,7 +425,7 @@ $(function () {
     });
 
     $("#delete-file").click(function (e) {
-        Files.Remove((e.srcElement).id);
+        Files.Remove(Files.GetCurrent().GetBaseName());
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
     });
 
