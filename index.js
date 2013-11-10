@@ -1,5 +1,10 @@
 var C2JS;
 (function (C2JS) {
+    function GetHelloWorldSource() {
+        return "#include <stdio.h>\n\nint main() {\n    printf(\"hello, world!\\n\");\n    return 0;\n}";
+    }
+    C2JS.GetHelloWorldSource = GetHelloWorldSource;
+
     var Size = (function () {
         function Size(width, height) {
             this.width = width;
@@ -67,7 +72,7 @@ var C2JS;
         };
 
         Editor.prototype.ResetHelloWorld = function () {
-            this.SetValue("#include <stdio.h>\n\nint main() {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
+            this.SetValue(GetHelloWorldSource());
         };
         return Editor;
     })();
@@ -135,10 +140,13 @@ var C2JS;
                     this.ActiveFileIndex = index;
                 }
             }
+
             if (this.FileModels.length == 0) {
                 var file = new FileModel(this.ActiveFileName);
                 var index = this.FileModels.push(file) - 1;
                 this.ActiveFileIndex = index;
+                localStorage.setItem(this.defaultNameKey, "program.c");
+                localStorage.setItem("program.c", GetHelloWorldSource());
             }
         }
         FileCollection.prototype.Append = function (NewFile, callback) {

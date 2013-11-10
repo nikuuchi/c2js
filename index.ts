@@ -4,6 +4,11 @@ declare var CodeMirror: any;
 declare function saveAs(data :Blob, filename: String): void;
 
 module C2JS {
+
+    export function GetHelloWorldSource(): string {
+        return "#include <stdio.h>\n\nint main() {\n    printf(\"hello, world!\\n\");\n    return 0;\n}";
+    }
+
     export interface Response {
         source:   string;
         error:    string;
@@ -76,7 +81,7 @@ module C2JS {
         }
 
         ResetHelloWorld(): void {
-            this.SetValue("#include <stdio.h>\n\nint main() {\n    printf(\"hello, world!\\n\");\n    return 0;\n}");
+            this.SetValue(GetHelloWorldSource());
         }
     }
 
@@ -147,10 +152,14 @@ module C2JS {
                     this.ActiveFileIndex = index;
                 }
             }
+
+            //First access for c2js
             if(this.FileModels.length == 0) {
                 var file = new FileModel(this.ActiveFileName);
                 var index = this.FileModels.push(file) - 1;
                 this.ActiveFileIndex = index;
+                localStorage.setItem(this.defaultNameKey, "program.c");
+                localStorage.setItem("program.c", GetHelloWorldSource());
             }
         }
 
