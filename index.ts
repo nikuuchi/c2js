@@ -319,7 +319,7 @@ $(function () {
     });
 
     var ChangeCurrentFile = (e: Event) => {
-        Files.SetCurrent((<any>e.srcElement).id);
+        Files.SetCurrent((<any>e.target).id);
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
         //console.log(e);
     };
