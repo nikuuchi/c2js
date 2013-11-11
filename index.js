@@ -131,7 +131,7 @@ var C2JS;
 
             for (var i = 0; i < localStorage.length; i++) {
                 var key = localStorage.key(i);
-                if (key == this.defaultNameKey) {
+                if (key == this.defaultNameKey || !key.match(/.*\.c/)) {
                     continue;
                 }
                 var file = new FileModel(localStorage.key(i));
