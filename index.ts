@@ -217,6 +217,9 @@ module C2JS {
         }
 
         Remove(BaseName: string, Callback: any): void {
+            if(!confirm('The item "'+BaseName+'.c" will be delete immediately. Are you sure you want to continue?')) {
+                return;
+            }
             var i = this.GetIndexOf(BaseName);
             i--;
             if(i < 0) {

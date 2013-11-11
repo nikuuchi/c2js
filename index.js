@@ -203,6 +203,9 @@ var C2JS;
         };
 
         FileCollection.prototype.Remove = function (BaseName, Callback) {
+            if (!confirm('The item "' + BaseName + '.c" will be delete immediately. Are you sure you want to continue?')) {
+                return;
+            }
             var i = this.GetIndexOf(BaseName);
             i--;
             if (i < 0) {
