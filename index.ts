@@ -94,7 +94,7 @@ module C2JS {
         }
 
         PrintLn(val: string): void {
-            this.$output.append(val + '<br>');
+            this.$output.append(val + '\n');
         }
 
         PrintErrorLn(val: string): void {
@@ -289,7 +289,7 @@ module C2JS {
 
     export function Run(source: string, ctx, out){
         ctx.source = source;
-        var Module = { print: function(x){ out.Print(x); } };
+        var Module = { print: function(x){ out.PrintLn(x); } };
         try {
             var exe = new Function("Module", source);
             exe(Module);

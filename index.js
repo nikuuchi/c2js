@@ -87,7 +87,7 @@ var C2JS;
         };
 
         Output.prototype.PrintLn = function (val) {
-            this.$output.append(val + '<br>');
+            this.$output.append(val + '\n');
         };
 
         Output.prototype.PrintErrorLn = function (val) {
@@ -278,7 +278,7 @@ var C2JS;
     function Run(source, ctx, out) {
         ctx.source = source;
         var Module = { print: function (x) {
-                out.Print(x);
+                out.PrintLn(x);
             } };
         try  {
             var exe = new Function("Module", source);
