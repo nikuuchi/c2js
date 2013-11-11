@@ -236,6 +236,7 @@ module C2JS {
                 localStorage.setItem(this.defaultNameKey, this.ActiveFileName);
                 localStorage.setItem(this.ActiveFileName, GetHelloWorldSource());
                 this.Append(file, Callback);
+                this.AddActiveClass();
             }
         }
 
