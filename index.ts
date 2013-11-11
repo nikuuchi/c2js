@@ -438,6 +438,12 @@ $(function () {
         if(filename == null) {
             return;
         }
+
+        if(filename == "" || filename.match(/[\s\t]+/)) {
+            alert("This file name is incorrect.");
+            return;
+        }
+
         if(filename.match(/.*\.c/) == null) {
             filename += '.c';
         }
