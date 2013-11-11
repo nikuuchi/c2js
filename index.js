@@ -422,7 +422,7 @@ $(function () {
     });
 
     $("#create-file").click(function (e) {
-        var filename = prompt("Input new file name");
+        var filename = prompt("Please enter the file name.");
         if (filename == null) {
             return;
         }
