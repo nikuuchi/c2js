@@ -82,6 +82,10 @@ var C2JS;
         function Output($output) {
             this.$output = $output;
         }
+        Output.prototype.Print = function (val) {
+            this.$output.append(val);
+        };
+
         Output.prototype.PrintLn = function (val) {
             this.$output.append(val + '<br>');
         };
@@ -274,13 +278,13 @@ var C2JS;
     function Run(source, ctx, out) {
         ctx.source = source;
         var Module = { print: function (x) {
-                out.PrintLn(x);
+                out.Print(x);
             } };
         try  {
             var exe = new Function("Module", source);
             exe(Module);
         } catch (e) {
-            out.PrintLn(e);
+            out.Print(e);
         }
         out.Prompt();
     }
@@ -303,7 +307,7 @@ var C2JS;
     }
 
     function CreateOutputView(text, fileName) {
-        return OutputColor(RenameFile(ReplaceNewLine(TerminalColor(text)), fileName));
+        return OutputColor(RenameFile(TerminalColor(text), fileName));
     }
     C2JS.CreateOutputView = CreateOutputView;
 })(C2JS || (C2JS = {}));

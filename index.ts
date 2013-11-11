@@ -89,6 +89,10 @@ module C2JS {
         constructor(public $output: JQuery){
         }
 
+        Print(val: string): void {
+            this.$output.append(val);
+        }
+
         PrintLn(val: string): void {
             this.$output.append(val + '<br>');
         }
@@ -285,12 +289,12 @@ module C2JS {
 
     export function Run(source: string, ctx, out){
         ctx.source = source;
-        var Module = { print: function(x){ out.PrintLn(x); } };
+        var Module = { print: function(x){ out.Print(x); } };
         try {
             var exe = new Function("Module", source);
             exe(Module);
         }catch(e) {
-            out.PrintLn(e);
+            out.Print(e);
         }
         out.Prompt();
     }
@@ -315,7 +319,7 @@ module C2JS {
     }
 
     export function CreateOutputView(text: string, fileName: string): string {
-        return OutputColor(RenameFile(ReplaceNewLine(TerminalColor(text)), fileName));
+        return OutputColor(RenameFile(TerminalColor(text), fileName));
     }
 }
 

@@ -7,3 +7,9 @@
   background-color: #d9534f;
   color: #fff;
 }
+
+pre {
+  border: none;
+  font-size: 100%;
+  background-color: #fff;
+}
