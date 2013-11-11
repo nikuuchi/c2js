@@ -216,7 +216,7 @@ module C2JS {
             localStorage.removeItem(BaseName + '.c');
         }
 
-        Remove(BaseName: string): void {
+        Remove(BaseName: string, Callback: any): void {
             var i = this.GetIndexOf(BaseName);
             i--;
             if(i < 0) {
@@ -226,6 +226,16 @@ module C2JS {
                 this.SetCurrent(this.FileModels[i].GetBaseName());
                 this.RemoveByBaseName(BaseName);
                 this.AddActiveClass(); //FIXME for remove 0-th file
+            } else if(this.FileModels.length == 1) {
+                this.SetCurrent(this.FileModels[0].GetBaseName());
+                this.RemoveByBaseName(BaseName);
+
+                this.ActiveFileName = 'program.c';
+                var file = new FileModel(this.ActiveFileName);
+                this.ActiveFileIndex = 0;
+                localStorage.setItem(this.defaultNameKey, this.ActiveFileName);
+                localStorage.setItem(this.ActiveFileName, GetHelloWorldSource());
+                this.Append(file, Callback);
             }
         }
 
@@ -458,7 +468,7 @@ $(function () {
     });
 
     $("#delete-file").click((e: Event) => {
-        Files.Remove(Files.GetCurrent().GetBaseName());
+        Files.Remove(Files.GetCurrent().GetBaseName(), ChangeCurrentFile);
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
     });
     //$("#file-name").change(function(e: Event) {

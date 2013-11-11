@@ -202,7 +202,7 @@ var C2JS;
             localStorage.removeItem(BaseName + '.c');
         };
 
-        FileCollection.prototype.Remove = function (BaseName) {
+        FileCollection.prototype.Remove = function (BaseName, Callback) {
             var i = this.GetIndexOf(BaseName);
             i--;
             if (i < 0) {
@@ -212,6 +212,16 @@ var C2JS;
                 this.SetCurrent(this.FileModels[i].GetBaseName());
                 this.RemoveByBaseName(BaseName);
                 this.AddActiveClass();
+            } else if (this.FileModels.length == 1) {
+                this.SetCurrent(this.FileModels[0].GetBaseName());
+                this.RemoveByBaseName(BaseName);
+
+                this.ActiveFileName = 'program.c';
+                var file = new FileModel(this.ActiveFileName);
+                this.ActiveFileIndex = 0;
+                localStorage.setItem(this.defaultNameKey, this.ActiveFileName);
+                localStorage.setItem(this.ActiveFileName, GetHelloWorldSource());
+                this.Append(file, Callback);
             }
         };
         return FileCollection;
@@ -446,7 +456,7 @@ $(function () {
     });
 
     $("#delete-file").click(function (e) {
-        Files.Remove(Files.GetCurrent().GetBaseName());
+        Files.Remove(Files.GetCurrent().GetBaseName(), ChangeCurrentFile);
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
     });
 
