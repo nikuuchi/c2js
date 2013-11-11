@@ -382,6 +382,12 @@ $(function () {
                         }
                     }));
                     Editor.SetErrorLines(errorLineNumbers);
+                    if (Editor.GetValue().match(/　/)) {
+                        if (confirm('ソースコード中に全角スペースが入っています。半角スペースに置換しますか？')) {
+                            var value = Editor.GetValue().replace(/　/g, " ");
+                            Editor.SetValue(value);
+                        }
+                    }
                 }
                 Output.Prompt();
 
@@ -464,9 +470,6 @@ $(function () {
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
     });
 
-    //$("#file-name").change(function(e: Event) {
-    //    FileModel.SetName(this.value);
-    //});
     $(window).on("beforeunload", function (e) {
         DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
     });
