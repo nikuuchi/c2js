@@ -384,7 +384,7 @@ $(function () {
                     Editor.SetErrorLines(errorLineNumbers);
                     if (Editor.GetValue().match(/　/)) {
                         if (confirm('ソースコード中に全角スペースが入っています。半角スペースに置換しますか？')) {
-                            var value = Editor.GetValue().replace(/　/g, " ");
+                            var value = Editor.GetValue().replace(/　/g, "  ");
                             Editor.SetValue(value);
                         }
                     }
