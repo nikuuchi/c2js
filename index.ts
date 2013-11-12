@@ -448,10 +448,11 @@ $(function () {
                 alert(<any>e);
             };
             reader.onload = (e: Event)=> {
-                //FIXME current file
                 var fileModel = new C2JS.FileModel(file.name);
                 Files.Append(fileModel, ChangeCurrentFile);
                 Editor.SetValue((<any>e.target).result);
+                Files.SetCurrent(fileModel.GetBaseName());
+                DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
             };
             reader.readAsText(file, 'utf-8');
         }
