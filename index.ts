@@ -83,6 +83,10 @@ module C2JS {
         ResetHelloWorld(): void {
             this.SetValue(GetHelloWorldSource());
         }
+
+        ClearHistory(): void {
+            this.editor.clearHistory();
+        }
     }
 
     export class Output {
@@ -348,6 +352,7 @@ $(function () {
     var ChangeCurrentFile = (e: Event) => {
         Files.SetCurrent((<any>e.target).id);
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
+        Editor.ClearHistory();
         //console.log(e);
     };
 
@@ -480,6 +485,7 @@ $(function () {
         Files.Append(file, ChangeCurrentFile);
         Files.SetCurrent(file.GetBaseName());
         Editor.ResetHelloWorld();
+        Editor.ClearHistory();
     });
 
     $("#delete-file").click((e: Event) => {

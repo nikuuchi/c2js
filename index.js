@@ -74,6 +74,10 @@ var C2JS;
         Editor.prototype.ResetHelloWorld = function () {
             this.SetValue(GetHelloWorldSource());
         };
+
+        Editor.prototype.ClearHistory = function () {
+            this.editor.clearHistory();
+        };
         return Editor;
     })();
     C2JS.Editor = Editor;
@@ -336,6 +340,7 @@ $(function () {
     var ChangeCurrentFile = function (e) {
         Files.SetCurrent((e.target).id);
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
+        Editor.ClearHistory();
         //console.log(e);
     };
 
@@ -468,6 +473,7 @@ $(function () {
         Files.Append(file, ChangeCurrentFile);
         Files.SetCurrent(file.GetBaseName());
         Editor.ResetHelloWorld();
+        Editor.ClearHistory();
     });
 
     $("#delete-file").click(function (e) {
