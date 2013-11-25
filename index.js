@@ -492,10 +492,11 @@ $(function () {
                 alert(e);
             };
             reader.onload = function (e) {
+                DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
                 var fileModel = new C2JS.FileModel(file.name);
                 Files.Append(fileModel, ChangeCurrentFile);
-                Editor.SetValue((e.target).result);
                 Files.SetCurrent(fileModel.GetBaseName());
+                Editor.SetValue((e.target).result);
                 DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
             };
             reader.readAsText(file, 'utf-8');
