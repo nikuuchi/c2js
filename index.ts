@@ -427,6 +427,7 @@ $(function () {
             EnableUI();
         });
     };
+
     $("#compile").click(CompileCallback);
     document.onkeydown = (ev: KeyboardEvent) => {
         if(ev.keyCode == 13/*Enter*/ && ev.ctrlKey) {
@@ -476,7 +477,11 @@ $(function () {
             return;
         }
 
-        if(filename == "" || filename.match(/[\s\t]+/)) {
+        if(filename == "") {
+            filename = "file"+ new Date().toJSON().replace(/\/|:|\./g,"-").replace(/20..-/,"").replace(/..-..T/,"").replace(/Z/g,"");
+        }
+
+        if(filename.match(/[\s\t]+/)) {
             alert("This file name is incorrect.");
             return;
         }
