@@ -502,10 +502,10 @@ $(function () {
             };
             reader.onload = function (e) {
                 DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
-                var fileModel = new C2JS.FileModel(file.name);
+                var fileModel = new C2JS.FileModel(Files.RenameExistName(file.name));
                 Files.Append(fileModel, ChangeCurrentFile);
                 Files.SetCurrent(fileModel.GetBaseName());
-                Editor.SetValue(Files.RenameExistName((e.target).result));
+                Editor.SetValue((e.target).result);
                 DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
                 Editor.ClearHistory();
             };

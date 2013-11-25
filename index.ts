@@ -513,10 +513,10 @@ $(function () {
             };
             reader.onload = (e: Event)=> {
                 DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
-                var fileModel = new C2JS.FileModel(file.name);
+                var fileModel = new C2JS.FileModel(Files.RenameExistName(file.name));
                 Files.Append(fileModel, ChangeCurrentFile);
                 Files.SetCurrent(fileModel.GetBaseName());
-                Editor.SetValue(Files.RenameExistName((<any>e.target).result));
+                Editor.SetValue((<any>e.target).result);
                 DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
                 Editor.ClearHistory();
             };
