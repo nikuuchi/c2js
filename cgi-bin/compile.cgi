@@ -3,6 +3,7 @@
 
 import sys
 import os
+import time
 import commands
 import codecs
 import json
@@ -29,7 +30,7 @@ if os.path.exists(name+'.js'):
     jsfilecontent = a.read()
 
 log = codecs.open(name+'.log', 'w', 'utf-8');
-logjson = {'input': req , 'message': message, 'remote_ip': os.environ['REMOTE_ADDR'], 'env': os.environ.__dict__}
+logjson = {'input': req , 'message': message, 'remote_ip': os.environ['REMOTE_ADDR'], 'env': os.environ.__dict__, 'unixtime': int(time.time()), 'time_string': time.ctime()}
 log.write(json.dumps(logjson))
 log.close()
 
