@@ -30,9 +30,6 @@ if os.path.exists(name+'.js'):
 
 log = codecs.open(name+'.log', 'w', 'utf-8');
 logjson = {'input': req , 'message': message, 'remote_ip': os.environ['REMOTE_ADDR'], 'env': os.environ.__dict__}
-a = os.environ.get('X-Forwarded-For')
-if a is not None:
-    logjson['forwardedIp'] = a
 log.write(json.dumps(logjson))
 log.close()
 
