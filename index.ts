@@ -376,7 +376,7 @@ $(function () {
         Editor.Enable();
     }
 
-    $("#compile").click((e: Event)=> {
+    var CompileCallback = (e: Event)=> {
         var src = Editor.GetValue();
         var file = Files.GetCurrent();
         var opt = '-m'; //TODO
@@ -426,7 +426,14 @@ $(function () {
             Output.PrintErrorLn('Sorry, the server is something wrong.');
             EnableUI();
         });
-    });
+    };
+    $("#compile").click(CompileCallback);
+    document.onkeydown = (ev: KeyboardEvent) => {
+        if(ev.keyCode == 13/*Enter*/ && ev.ctrlKey) {
+            CompileCallback(ev);
+            return false;
+        }
+    };
 
     $("#save").click((e: Event)=> {
         var blob = new Blob([Editor.GetValue()], {type: 'text/plain; charset=UTF-8'});

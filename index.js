@@ -364,7 +364,7 @@ $(function () {
         Editor.Enable();
     };
 
-    $("#compile").click(function (e) {
+    var CompileCallback = function (e) {
         var src = Editor.GetValue();
         var file = Files.GetCurrent();
         var opt = '-m';
@@ -414,7 +414,14 @@ $(function () {
             Output.PrintErrorLn('Sorry, the server is something wrong.');
             EnableUI();
         });
-    });
+    };
+    $("#compile").click(CompileCallback);
+    document.onkeydown = function (ev) {
+        if (ev.keyCode == 13 && ev.ctrlKey) {
+            CompileCallback(ev);
+            return false;
+        }
+    };
 
     $("#save").click(function (e) {
         var blob = new Blob([Editor.GetValue()], { type: 'text/plain; charset=UTF-8' });
