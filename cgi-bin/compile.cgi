@@ -28,4 +28,12 @@ if os.path.exists(name+'.js'):
     a = open(name+'.js', 'r')
     jsfilecontent = a.read()
 
+log = codecs.open(name+'.log', 'w', 'utf-8');
+logjson = {'input': req , 'remote_ip': os.environ['REMOTE_ADDR']}
+a = os.environ.get('X-Forwarded-For')
+if a is not None:
+    logjson['forwardedIp'] = a
+log.write(json.dumps(logjson))
+log.close()
+
 print CreateResponseJson(jsfilecontent, '', message)
