@@ -478,7 +478,7 @@ $(function () {
         }
 
         if(filename == "") {
-            filename = "file"+ new Date().toJSON().replace(/\/|:|\./g,"-").replace(/20..-/,"").replace(/..-..T/,"").replace(/Z/g,"");
+            filename = "file"+ new Date().toJSON().replace(/\/|:|\./g,"-").replace(/20..-/,"").replace(/..-..T/,"").replace(/Z/g,"").replace(/-/g,"");
         }
 
         if(filename.match(/[\s\t]+/)) {
