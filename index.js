@@ -249,6 +249,15 @@ var C2JS;
         FileCollection.prototype.GetLength = function () {
             return this.FileModels.length;
         };
+
+        FileCollection.prototype.RenameExistName = function (Name) {
+            for (var i = 0; i < this.FileModels.length; i++) {
+                if (this.FileModels[i].GetName() == Name) {
+                    return Name.replace(/\.c/g, "_1.c");
+                }
+            }
+            return Name;
+        };
         return FileCollection;
     })();
     C2JS.FileCollection = FileCollection;
@@ -496,8 +505,9 @@ $(function () {
                 var fileModel = new C2JS.FileModel(file.name);
                 Files.Append(fileModel, ChangeCurrentFile);
                 Files.SetCurrent(fileModel.GetBaseName());
-                Editor.SetValue((e.target).result);
+                Editor.SetValue(Files.RenameExistName((e.target).result));
                 DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
+                Editor.ClearHistory();
             };
             reader.readAsText(file, 'utf-8');
         }

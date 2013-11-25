@@ -264,6 +264,15 @@ module C2JS {
             return this.FileModels.length;
         }
 
+        RenameExistName(Name: string): string {
+            for(var i = 0; i < this.FileModels.length; i++) {
+                if(this.FileModels[i].GetName() == Name) {
+                    return Name.replace(/\.c/g,"_1.c");
+                }
+            }
+            return Name;
+        }
+
     }
 
     export class SourceDB {
@@ -507,8 +516,9 @@ $(function () {
                 var fileModel = new C2JS.FileModel(file.name);
                 Files.Append(fileModel, ChangeCurrentFile);
                 Files.SetCurrent(fileModel.GetBaseName());
-                Editor.SetValue((<any>e.target).result);
+                Editor.SetValue(Files.RenameExistName((<any>e.target).result));
                 DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
+                Editor.ClearHistory();
             };
             reader.readAsText(file, 'utf-8');
         }
