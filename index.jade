@@ -23,24 +23,52 @@ html
     input#file-open-dialog(type='file', style='display:none;', accept=".c")
     .container(style="width: 960px;")
       .navbar.navbar-default
-        .navbar-header
+        .navbar-header.pull-right
           button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
             span.icon-bar
             span.icon-bar
             span.icon-bar
           a.navbar-brand Aspen
-        .navbar-collapse.pull-right
-          button#open.btn.navbar-btn.btn-default(type='button')
-            | &nbsp;
-            span.glyphicon.glyphicon-folder-open
-            | &nbsp;
-            | Open
-          | &nbsp;
-          button#save.btn.navbar-btn.btn-default(type='button')
-            | &nbsp;
-            span.glyphicon.glyphicon-floppy-save
-            | &nbsp;
-            | Save
+        .navbar-collapse
+          button.btn.navbar-btn.btn-default(type='button', data-toggle='dropdown')
+              | &nbsp;
+              span.glyphicon.glyphicon-file
+              | &nbsp;
+              | File
+              | &nbsp;
+              span.caret
+          ul.dropdown-menu(role='menu', style='right: auto;')
+            li
+              a#create-file-menu(href='#')
+                span.glyphicon.glyphicon-plus
+                | &nbsp;
+                | New File ...
+            li
+              a#open-file-menu(href='#')
+                span.glyphicon.glyphicon-folder-open
+                | &nbsp;
+                | Open File ...
+            li
+              a#save-file-menu(href='#')
+                span.glyphicon.glyphicon-floppy-save
+                | &nbsp;
+                | Save
+            li
+              a#rename-menu(href='#')
+                span.glyphicon.glyphicon-edit
+                | &nbsp;
+                | Rename ...
+            li.divider
+            li
+              a#delete-file-menu(href='#')
+                span.glyphicon.glyphicon-remove
+                | &nbsp;
+                | Delete File
+            li
+              a#delete-all-file-menu(href='#')
+                span.glyphicon.glyphicon-remove
+                | &nbsp;
+                | Close All Files
           | &nbsp;
           button#compile.btn.navbar-btn.btn-primary(type='button')
             | &nbsp;

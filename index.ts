@@ -224,10 +224,19 @@ module C2JS {
             localStorage.removeItem(BaseName + '.c');
         }
 
+        Rename(oldBaseName: string, newname: string, contents: string, Callback: any, DB: SourceDB): void {
+            this.Remove(oldBaseName, Callback);
+            var file = new FileModel(newname);
+            this.Append(file, Callback);
+            this.SetCurrent(file.GetBaseName());
+            DB.Save(file.GetName(), contents);
+        }
+
+        IsRemove(BaseName: string): boolean {
+            return confirm('The item "'+BaseName+'.c" will be delete immediately. Are you sure you want to continue?');
+        }
+
         Remove(BaseName: string, Callback: any): void {
-            if(!confirm('The item "'+BaseName+'.c" will be delete immediately. Are you sure you want to continue?')) {
-                return;
-            }
             var i = this.GetIndexOf(BaseName);
             i--;
             if(i < 0) {
@@ -245,10 +254,14 @@ module C2JS {
                 var file = new FileModel(this.ActiveFileName);
                 this.ActiveFileIndex = 0;
                 localStorage.setItem(this.defaultNameKey, this.ActiveFileName);
-                localStorage.setItem(this.ActiveFileName, GetHelloWorldSource());
+                localStorage.setItem(this.ActiveFileName, "");//GetHelloWorldSource());
                 this.Append(file, Callback);
                 this.AddActiveClass();
             }
+        }
+
+        GetLength(): number {
+            return this.FileModels.length;
         }
 
     }
@@ -275,12 +288,12 @@ module C2JS {
 
     }
 
-    export function Compile(source, option, isCached, Context, callback, onerror) {
+    export function Compile(source, option, filename, isCached, Context, callback, onerror) {
         if(isCached) {
             $.ajax({
                 type: "POST",
                 url: "cgi-bin/compile.cgi",
-                data: JSON.stringify({source: source, option: option}),
+                data: JSON.stringify({source: source, option: option, filename: filename}),
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 success: callback,
@@ -325,6 +338,36 @@ module C2JS {
     export function CreateOutputView(text: string, fileName: string): string {
         return OutputColor(RenameFile(TerminalColor(text), fileName));
     }
+
+    export function CheckFileName(name: string, DB: SourceDB): string {
+        var filename = name;
+        if(filename == null) {
+            return null;
+        }
+
+        if(filename == "") {
+            filename = "file"+ new Date().toJSON().replace(/\/|:|\./g,"-").replace(/20..-/,"").replace(/..-..T/,"").replace(/Z/g,"").replace(/-/g,"");
+        }
+
+        if(filename.match(/[\s\t]+/)) {
+            alert("This file name is incorrect.");
+            return null;
+        }
+
+        if(filename.match(/.*\.c/) == null) {
+            filename += '.c';
+        }
+        if(DB.Exist(filename)) {
+            alert("'"+filename+"' already exists.");
+            return null;
+        }
+        return filename;
+    }
+
+    export function IsAllRemove(): boolean {
+        return confirm('All items will be delete immediately. Are you sure you want to continue?');
+    }
+
 }
 
 var Aspen: any = {};
@@ -353,7 +396,6 @@ $(function () {
         Files.SetCurrent((<any>e.target).id);
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
         Editor.ClearHistory();
-        //console.log(e);
     };
 
     Files.Show(ChangeCurrentFile);
@@ -362,16 +404,16 @@ $(function () {
 
     var DisableUI = () => {
         //$("#file-name").attr("disabled", "disabled"); //FIXME tab disable
-        $("#open").addClass("disabled");
-        $("#save").addClass("disabled");
+        $("#open-file-menu").addClass("disabled");
+        $("#save-file-menu").addClass("disabled");
         $("#compile").addClass("disabled");
         Editor.Disable();
     }
 
     var EnableUI = () => {
         //$("#file-name").removeAttr("disabled"); //FIXME tab enable
-        $("#open").removeClass("disabled");
-        $("#save").removeClass("disabled");
+        $("#open-file-menu").removeClass("disabled");
+        $("#save-file-menu").removeClass("disabled");
         $("#compile").removeClass("disabled");
         Editor.Enable();
     }
@@ -386,7 +428,7 @@ $(function () {
         DisableUI();
         Editor.RemoveAllErrorLine();
 
-        C2JS.Compile(src, opt, changeFlag, Context, function(res){
+        C2JS.Compile(src, opt, file.GetName(), changeFlag, Context, function(res){
             try{
                 changeFlag = false;
                 if(res == null) {
@@ -436,12 +478,12 @@ $(function () {
         }
     };
 
-    $("#save").click((e: Event)=> {
+    $("#save-file-menu").click((e: Event)=> {
         var blob = new Blob([Editor.GetValue()], {type: 'text/plain; charset=UTF-8'});
         saveAs(blob, Files.GetCurrent().GetName());
     });
 
-    $("#open").click((e: Event)=> {
+    $("#open-file-menu").click((e: Event)=> {
         $("#file-open-dialog").click();
     });
 
@@ -471,39 +513,60 @@ $(function () {
         }
     });
 
-    $("#create-file").click((e: Event) => {
+    var CreateFileFunction = (e: Event) => {
         var filename = prompt("Please enter the file name.");
+        filename = C2JS.CheckFileName(filename, DB);
         if(filename == null) {
             return;
         }
 
-        if(filename == "") {
-            filename = "file"+ new Date().toJSON().replace(/\/|:|\./g,"-").replace(/20..-/,"").replace(/..-..T/,"").replace(/Z/g,"").replace(/-/g,"");
-        }
-
-        if(filename.match(/[\s\t]+/)) {
-            alert("This file name is incorrect.");
-            return;
-        }
-
-        if(filename.match(/.*\.c/) == null) {
-            filename += '.c';
-        }
-        if(DB.Exist(filename)) {
-            alert("'"+filename+"' already exists.");
-            return;
-        }
         var file = new C2JS.FileModel(filename);
         Files.Append(file, ChangeCurrentFile);
         Files.SetCurrent(file.GetBaseName());
         Editor.ResetHelloWorld();
         Editor.ClearHistory();
-    });
+    };
+    $("#create-file").click(CreateFileFunction);
+    $("#create-file-menu").click(CreateFileFunction);
 
-    $("#delete-file").click((e: Event) => {
-        Files.Remove(Files.GetCurrent().GetBaseName(), ChangeCurrentFile);
+    var RenameFunction = (e: Event) => {
+        DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
+        var oldfilebasename = Files.GetCurrent().GetBaseName();
+        var oldfilecontents = Editor.GetValue();
+
+        var filename = prompt("Rename: Please enter the file name.");
+        filename = C2JS.CheckFileName(filename, DB);
+        if(filename == null) {
+            return;
+        }
+        Files.Rename(oldfilebasename, filename, oldfilecontents, ChangeCurrentFile, DB);
+        Editor.SetValue(oldfilecontents);
+        DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
+    };
+    $("#rename-menu").click(RenameFunction);
+
+    var DeleteFileFunction = (e: Event) => {
+        var BaseName = Files.GetCurrent().GetBaseName();
+        if(Files.IsRemove(BaseName)) {
+            Files.Remove(BaseName, ChangeCurrentFile);
+        }
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
-    });
+    };
+    $("#delete-file").click(DeleteFileFunction);
+    $("#delete-file-menu").click(DeleteFileFunction);
+
+    var DeleteAllFilesFunction = (e: Event) => {
+        var BaseName = Files.GetCurrent().GetBaseName();
+        if(C2JS.IsAllRemove()) {
+            while(Files.GetLength() > 1) {
+                Files.Remove(BaseName, ChangeCurrentFile);
+                BaseName = Files.GetCurrent().GetBaseName();
+            }
+            Files.Remove(BaseName, ChangeCurrentFile);
+        }
+        Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
+    };
+    $("#delete-all-file-menu").click(DeleteAllFilesFunction);
 
     $(window).on("beforeunload", (e: Event)=> {
         DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
