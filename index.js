@@ -383,6 +383,12 @@ $(function () {
     Aspen.Source = DB;
     Aspen.Context = Context;
     Aspen.Files = Files;
+    Aspen.Debug = {};
+    Aspen.Debug.DeleteAllKey = function () {
+        while (localStorage.length > 1) {
+            localStorage.removeItem(localStorage.key(0));
+        }
+    };
 
     var changeFlag = true;
     Editor.OnChange(function (e) {

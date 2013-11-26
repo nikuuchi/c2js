@@ -394,6 +394,12 @@ $(function () {
     Aspen.Source = DB;
     Aspen.Context = Context;
     Aspen.Files = Files;
+    Aspen.Debug = {};
+    Aspen.Debug.DeleteAllKey = () => {
+        while(localStorage.length > 1) {
+            localStorage.removeItem(localStorage.key(0));
+        }
+    };
 
     var changeFlag = true;
     Editor.OnChange((e: Event)=> {
