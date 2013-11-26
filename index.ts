@@ -358,7 +358,7 @@ module C2JS {
             filename = "file"+ new Date().toJSON().replace(/\/|:|\./g,"-").replace(/20..-/,"").replace(/..-..T/,"").replace(/Z/g,"").replace(/-/g,"");
         }
 
-        if(filename.match(/[\s\t]+/)) {
+        if(filename.match(/[\s\t\\/:\*\?\"\<\>\|]+/)) {
             alert("This file name is incorrect.");
             return null;
         }
