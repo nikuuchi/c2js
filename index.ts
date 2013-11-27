@@ -586,7 +586,7 @@ $(function () {
     });
 
     var CreateFileFunction = (e: Event) => {
-        var filename = prompt("Please enter the file name.");
+        var filename = prompt("Please enter the file name.", C2JS.CheckFileName("", DB));
         filename = C2JS.CheckFileName(filename, DB);
         if(filename == null) {
             return;
@@ -598,6 +598,7 @@ $(function () {
         Editor.ResetHelloWorld();
         Editor.ClearHistory();
     };
+    (<any>$("#create-file")).tooltip({placement: "bottom", html: true});
     $("#create-file").click(CreateFileFunction);
     $("#create-file-menu").click(CreateFileFunction);
 
@@ -606,7 +607,7 @@ $(function () {
         var oldfilebasename = Files.GetCurrent().GetBaseName();
         var oldfilecontents = Editor.GetValue();
 
-        var filename = prompt("Rename: Please enter the file name.");
+        var filename = prompt("Rename: Please enter the file name.", oldfilebasename+".c");
         filename = C2JS.CheckFileName(filename, DB);
         if(filename == null) {
             return;
@@ -624,6 +625,7 @@ $(function () {
         }
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
     };
+    (<any>$("#delete-file")).tooltip({placement: "bottom", html: true});
     $("#delete-file").click(DeleteFileFunction);
     $("#delete-file-menu").click(DeleteFileFunction);
 
