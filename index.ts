@@ -2,6 +2,7 @@
 
 declare var CodeMirror: any;
 declare function saveAs(data :Blob, filename: String): void;
+var _ua: any;
 
 module C2JS {
 
@@ -648,5 +649,10 @@ $(function () {
 
     if(DB.Exist(Files.GetCurrent().GetName())) {
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
+    }
+
+    if(_ua.Trident && _ua.ltIE9){
+        $("#NotSupportedBrouserAlert").show();
+        DisableUI();
     }
 });

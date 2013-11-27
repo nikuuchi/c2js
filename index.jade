@@ -22,6 +22,8 @@ html
   body(style="padding: 30px;")
     input#file-open-dialog(type='file', style='display:none;', accept=".c")
     .container(style="width: 960px;")
+      .alert.alert-danger#NotSupportedBrouserAlert(style="display: none;")
+        | Your browser is not supported. please use Internet Explorer 10 or 11, Google Chrome or Firefox.
       .navbar.navbar-default
         .navbar-header.pull-right
           button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
@@ -104,3 +106,4 @@ html
     +js('lib/FileSaver.js')
     // JavaScript plugins (requires jQuery)
     +js('index.js')
+    +js('ua.js')

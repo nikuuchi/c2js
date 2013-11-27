@@ -1,3 +1,5 @@
+var _ua;
+
 var C2JS;
 (function (C2JS) {
     function GetHelloWorldSource() {
@@ -631,5 +633,10 @@ $(function () {
 
     if (DB.Exist(Files.GetCurrent().GetName())) {
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
+    }
+
+    if (_ua.Trident && _ua.ltIE9) {
+        $("#NotSupportedBrouserAlert").show();
+        DisableUI();
     }
 });
