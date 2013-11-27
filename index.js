@@ -78,6 +78,14 @@ var C2JS;
         Editor.prototype.ClearHistory = function () {
             this.editor.clearHistory();
         };
+
+        Editor.prototype.ContainsMultiByteSpace = function () {
+            return this.editor.getValue().GetValue().match(/　/);
+        };
+
+        Editor.prototype.ReplaceMultiByteSpace = function () {
+            this.editor.setValue(this.editor.getValue().replace(/　/g, "  "));
+        };
         return Editor;
     })();
     C2JS.Editor = Editor;
@@ -90,8 +98,18 @@ var C2JS;
             this.$output.append(val);
         };
 
+        Output.prototype.PrintFromC = function (val) {
+            var obj = document.createElement('samp');
+            if (typeof obj.textContent != 'undefined') {
+                obj.textContent = val;
+            } else {
+                obj.innerText = val;
+            }
+            this.$output.append("<samp>" + obj.innerHTML.split(/[\r\n|\r|\n]/g).join("</samp><br><samp>") + "</samp>");
+        };
+
         Output.prototype.PrintLn = function (val) {
-            this.$output.append(val + '\n');
+            this.$output.append(val + '<br>\n');
         };
 
         Output.prototype.PrintErrorLn = function (val) {
@@ -304,7 +322,7 @@ var C2JS;
     function Run(source, ctx, out) {
         ctx.source = source;
         var Module = { print: function (x) {
-                out.PrintLn(x);
+                out.PrintFromC(x);
             } };
         try  {
             var exe = new Function("Module", source);
@@ -316,26 +334,47 @@ var C2JS;
     }
     C2JS.Run = Run;
 
-    function TerminalColor(text) {
+    function ConvertTerminalColor(text) {
         return text.replace(/\[31m(.*)\[0m/g, '<span class="text-danger">$1</span>');
     }
 
     function ReplaceNewLine(text) {
-        return text.replace(/\n/g, "<br>\n");
+        return text.replace(/[\r\n|\r|\n]/g, "<br>\n");
     }
 
-    function OutputColor(text) {
-        return text.replace(/(note:.*)$/gm, "<span class='text-info'>$1</span>").replace(/(warning:.*)$/gm, "<span class='text-warning'>$1</span>").replace(/(error:.*)$/gm, "<span class='text-danger'>$1</span>");
+    function FormatMessage(text, filename) {
+        text = text.replace(/ERROR.*$/gm, "").replace(/</gm, "&lt;").replace(/>/gm, "&gt;");
+
+        var textlines = text.split(/[\r\n|\r|\n]/g);
+        for (var i = 0; i < textlines.length; ++i) {
+            if (textlines[i].lastIndexOf(filename, 0) == 0) {
+                textlines[i] = textlines[i].replace(/ \[.*\]/gm, "");
+                var code = textlines[i + 1];
+                var indicator = textlines[i + 2];
+                var begin = indicator.indexOf("~");
+                var end = indicator.lastIndexOf("~") + 1;
+                var replacee = code.substring(begin, end);
+                var code = replacee.length > 0 ? code.replace(replacee, "<strong>" + replacee + "</strong>") : code;
+                textlines[i + 1] = "<code>" + code.replace(/ /gm, "&nbsp;") + "</code>";
+                textlines[i + 2] = "<samp>" + indicator.replace("~", " ").replace(/ /gm, "&nbsp;").replace(/(&nbsp;)?\^/, "<span class='glyphicon glyphicon-arrow-up'></span>") + "</samp>";
+                if (textlines[i + 3].lastIndexOf(filename, 0) != 0) {
+                    textlines[i + 3] = "<samp>" + textlines[i + 3].replace(/ /gm, "&nbsp;") + "</samp>";
+                }
+                i += 2;
+            }
+        }
+
+        return textlines.join("<br>\n").replace(/(\d+:\d+): (note):(.*)$/gm, "<b>$1</b>: <span class='label label-info'>$2</span> <span class='text-info'>$3</span>").replace(/(\d+:\d+): (warning):(.*)$/gm, "<b>$1</b>: <span class='label label-warning'>$2</span> <span class='text-warning'>$3</span>").replace(/(\d+:\d+): (error):(.*)$/gm, "<b>$1</b>: <span class='label label-danger'>$2</span> <span class='text-danger'>$3</span>");
     }
 
-    function RenameFile(text, fileName) {
+    function FormatFilename(text, fileName) {
         return text.replace(/\/.*\.c/g, fileName + ".c").replace(/\/.*\/(.*\.h)/g, "$1");
     }
 
-    function CreateOutputView(text, fileName) {
-        return OutputColor(RenameFile(TerminalColor(text), fileName));
+    function FormatClangErrorMessage(text, fileName) {
+        return FormatMessage(FormatFilename(ConvertTerminalColor(text), fileName), fileName);
     }
-    C2JS.CreateOutputView = CreateOutputView;
+    C2JS.FormatClangErrorMessage = FormatClangErrorMessage;
 
     function CheckFileName(name, DB) {
         var filename = name;
@@ -363,10 +402,10 @@ var C2JS;
     }
     C2JS.CheckFileName = CheckFileName;
 
-    function IsAllRemove() {
+    function ConfirmAllRemove() {
         return confirm('All items will be delete immediately. Are you sure you want to continue?');
     }
-    C2JS.IsAllRemove = IsAllRemove;
+    C2JS.ConfirmAllRemove = ConfirmAllRemove;
 })(C2JS || (C2JS = {}));
 
 var Aspen = {};
@@ -388,6 +427,13 @@ $(function () {
         while (localStorage.length > 1) {
             localStorage.removeItem(localStorage.key(0));
         }
+    };
+    Aspen.Debug.OutputClangMessage = function (message, filename) {
+        Output.PrintLn('DEBUG');
+        Output.PrintLn(C2JS.FormatClangErrorMessage(message, filename));
+    };
+    Aspen.Debug.PrintC = function (message) {
+        Output.PrintFromC(message);
     };
 
     var changeFlag = true;
@@ -423,55 +469,58 @@ $(function () {
     };
 
     var CompileCallback = function (e) {
+        if (Editor.ContainsMultiByteSpace()) {
+            if (confirm('ソースコード中に全角スペースが含まれています。半角スペースに置換しますか？\n(C言語では全角スペースを使えません)')) {
+                Editor.ReplaceMultiByteSpace();
+            }
+        }
         var src = Editor.GetValue();
         var file = Files.GetCurrent();
         var opt = '-m';
         Output.Clear();
         Output.Prompt();
         Output.PrintLn('gcc ' + file.GetName() + ' -o ' + file.GetBaseName());
-        DisableUI();
-        Editor.RemoveAllErrorLine();
+        try  {
+            DisableUI();
+            Editor.RemoveAllErrorLine();
 
-        C2JS.Compile(src, opt, file.GetName(), changeFlag, Context, function (res) {
-            try  {
-                changeFlag = false;
-                if (res == null) {
-                    Output.PrintErrorLn('Sorry, the server is something wrong.');
-                    return;
-                }
-                if (res.error.length > 0) {
-                    Output.PrintLn(C2JS.CreateOutputView(res.error, file.GetBaseName()));
-                    var errorLineNumbers = [];
-                    jQuery.each(res.error.split(".c"), (function (k, v) {
-                        var match = v.match(/:(\d+):\d+:\s+error/);
-                        if (match && match[1]) {
-                            errorLineNumbers.push(match[1]);
-                        }
-                    }));
-                    Editor.SetErrorLines(errorLineNumbers);
-                    if (Editor.GetValue().match(/　/)) {
-                        if (confirm('ソースコード中に全角スペースが入っています。半角スペースに置換しますか？')) {
-                            var value = Editor.GetValue().replace(/　/g, "  ");
-                            Editor.SetValue(value);
-                        }
+            C2JS.Compile(src, opt, file.GetName(), changeFlag, Context, function (res) {
+                try  {
+                    changeFlag = false;
+                    if (res == null) {
+                        Output.PrintErrorLn('Sorry, the server is something wrong.');
+                        return;
                     }
-                }
-                Output.Prompt();
+                    if (res.error.length > 0) {
+                        Output.PrintLn(C2JS.FormatClangErrorMessage(res.error, file.GetBaseName()));
+                        var errorLineNumbers = [];
+                        jQuery.each(res.error.split(".c"), (function (k, v) {
+                            var match = v.match(/:(\d+):\d+:\s+error/);
+                            if (match && match[1]) {
+                                errorLineNumbers.push(match[1]);
+                            }
+                        }));
+                        Editor.SetErrorLines(errorLineNumbers);
+                    }
+                    Output.Prompt();
 
-                Context.error = res.error;
-                if (!res.error.match("error:")) {
-                    Output.PrintLn('./' + file.GetBaseName());
-                    C2JS.Run(res.source, Context, Output);
-                } else {
-                    Context.source = null;
+                    Context.error = res.error;
+                    if (!res.error.match("error:")) {
+                        Output.PrintLn('./' + file.GetBaseName());
+                        C2JS.Run(res.source, Context, Output);
+                    } else {
+                        Context.source = null;
+                    }
+                } finally {
+                    EnableUI();
                 }
-            } finally {
+            }, function () {
+                Output.PrintErrorLn('Sorry, the server is something wrong.');
                 EnableUI();
-            }
-        }, function () {
-            Output.PrintErrorLn('Sorry, the server is something wrong.');
+            });
+        } finally {
             EnableUI();
-        });
+        }
     };
 
     $("#compile").click(CompileCallback);
@@ -563,7 +612,7 @@ $(function () {
 
     var DeleteAllFilesFunction = function (e) {
         var BaseName = Files.GetCurrent().GetBaseName();
-        if (C2JS.IsAllRemove()) {
+        if (C2JS.ConfirmAllRemove()) {
             while (Files.GetLength() > 1) {
                 Files.Remove(BaseName, ChangeCurrentFile);
                 BaseName = Files.GetCurrent().GetBaseName();
