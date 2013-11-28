@@ -94,7 +94,10 @@ html
         textarea#editor(rows="20", style="width:100%;")
       .panel.panel-default
         .panel-heading
-          h4 Console Output
+          h4 Console Output 
+            .checkbox
+              label
+                input(type="checkbox") エラーメッセージを日本語化する(β)
         #output.panel-body
     // Include all compiled plugins (below), or include individual files as needed
     +js('lib/jquery.min.js')
