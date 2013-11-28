@@ -351,6 +351,87 @@ var C2JS;
     }
     C2JS.Run = Run;
 
+    function TranslateMessageToJapanese(text) {
+        text = text.replace(/&nbsp;/g, " ");
+        var wordtable = {
+            "variable": "変数",
+            "parameter": "引数",
+            "argument": "引数",
+            "identifier": "変数または関数",
+            "pointer": "ポインタ",
+            "integer": "整数"
+        };
+        var rules = {};
+        rules["unused (\\w+) ('.*?')"] = (function () {
+            return wordtable[RegExp.$1] + " " + RegExp.$2 + " は使われていません";
+        });
+        rules["expression result unused"] = (function () {
+            return "計算結果が使われていません";
+        });
+        rules["implicit declaration of function ('.*?') is invalid in C99"] = (function () {
+            return "関数 " + RegExp.$1 + " は宣言されていません";
+        });
+        rules["implicit conversion from ('.*?') to ('.*?') changes value from (.*?) to (.*?)"] = (function () {
+            return RegExp.$1 + "型から" + RegExp.$2 + "型への暗黙の変換により、値が " + RegExp.$3 + " から " + RegExp.$4 + "に変化します (警告を消すには (" + RegExp.$2 + ")" + RegExp.$3 + "と書き、明示的に変換してください)";
+        });
+        rules["incompatible (\\w+) to (\\w+) conversion returning ('.*?') from a function with result type ('.*?')"] = (function () {
+            return wordtable[RegExp.$1] + "から" + wordtable[RegExp.$2] + "への不正な変換です。戻り値は" + RegExp.$4 + "型ですが、" + RegExp.$3 + "型の値を返そうとしています";
+        });
+        rules["incompatible (\\w+) to (\\w+) conversion passing ('.*?') to parameter of type ('.*?')"] = (function () {
+            return wordtable[RegExp.$1] + "から" + wordtable[RegExp.$2] + "への不正な変換です。引数は" + RegExp.$4 + "型ですが、" + RegExp.$3 + "型の値を渡そうとしています";
+        });
+
+        rules["void function ('.*?') should not return a value"] = (function () {
+            return "関数 " + RegExp.$1 + " の戻り値はvoid型なので、値を返すことはできません。単にreturn;と書くか、戻り値の型を修正してください";
+        });
+        rules["too many arguments to function call, expected (\\d+), have (\\d+)"] = (function () {
+            return RegExp.$1 + "引数の関数に" + RegExp.$2 + "個の引数を渡しています (引数が多すぎます)";
+        });
+        rules["too few arguments to function call, expected (\\d+), have 0"] = (function () {
+            return RegExp.$1 + "引数の関数に引数を渡していません (引数が少なすぎます)";
+        });
+        rules["too few arguments to function call, expected (\\d+), have (\\d+)"] = (function () {
+            return RegExp.$1 + "引数の関数に" + RegExp.$2 + "個の引数を渡しています (引数が少なすぎます)";
+        });
+        rules["use of undeclared identifier ('.*?')"] = (function () {
+            return "変数 " + RegExp.$1 + " は宣言されていません。変数を使用するにはあらかじめ宣言を記述する必要があります";
+        });
+        rules["expected ';'.*"] = (function () {
+            return "セミコロン ; が必要です";
+        });
+        rules["expected '}'"] = (function () {
+            return "中括弧 } が閉じていません";
+        });
+        rules["expected '\\)'"] = (function () {
+            return "括弧 ) が閉じていません";
+        });
+        rules["expected ('.*?') after ('.*?')"] = (function () {
+            return RegExp.$1 + " の後に " + RegExp.$2 + " が必要です";
+        });
+
+        rules["to match this '{'"] = (function () {
+            return "ブロックは以下の位置で開始しています";
+        });
+        rules["to match this '\\('"] = (function () {
+            return "括弧は以下の位置で開いています";
+        });
+        rules["('.*?') declared here"] = (function () {
+            return RegExp.$1 + " の宣言は以下の通りです：";
+        });
+
+        for (var rule in rules) {
+            try  {
+                if (text.match(new RegExp(rule))) {
+                    return (RegExp).leftContext + rules[rule]() + (RegExp).rightContext;
+                }
+            } catch (e) {
+                console.log(e);
+                console.log(rule);
+            }
+        }
+        return text;
+    }
+
     function ConvertTerminalColor(text) {
         return text.replace(/\[31m(.*)\[0m/g, '<span class="text-danger">$1</span>');
     }
@@ -364,29 +445,34 @@ var C2JS;
 
         var textlines = text.split(/[\r\n|\r|\n]/g);
         for (var i = 0; i < textlines.length; ++i) {
-            if (textlines[i].lastIndexOf(filename, 0) == 0 && textlines[i + 1].lastIndexOf(filename, 0) != 0) {
+            if (textlines[i].lastIndexOf(filename, 0) == 0) {
                 textlines[i] = textlines[i].replace(/ \[.*\]/gm, "");
-                var code = textlines[i + 1];
-                var indicator = textlines[i + 2];
-                var begin = indicator.indexOf("~");
-                var end = indicator.lastIndexOf("~") + 1;
-                var replacee = code.substring(begin, end);
-                var code = replacee.length > 0 ? code.replace(replacee, "<u>" + replacee + "</u>") : code;
-                var consumedLines = 1;
-                textlines[i + 1] = "<code>" + code.replace(/ /gm, "&nbsp;") + "</code>";
-                if (textlines[i + 2].lastIndexOf(filename, 0) != 0) {
-                    textlines[i + 2] = "<samp>" + indicator.replace(/~/g, " ").replace(/ /gm, "&nbsp;").replace(/\^/, "<span class='glyphicon glyphicon-arrow-up'></span>") + "</samp>";
-                    consumedLines++;
+                if (Aspen.Language == "ja") {
+                    textlines[i] = TranslateMessageToJapanese(textlines[i]);
                 }
-                if (textlines[i + 3].lastIndexOf(filename, 0) != 0) {
-                    textlines[i + 3] = "<samp>" + textlines[i + 3].replace(/ /gm, "&nbsp;") + "</samp>";
-                    consumedLines++;
+                if (textlines[i + 1].lastIndexOf(filename, 0) != 0) {
+                    var code = textlines[i + 1];
+                    var indicator = textlines[i + 2];
+                    var begin = indicator.indexOf("~");
+                    var end = indicator.lastIndexOf("~") + 1;
+                    var replacee = code.substring(begin, end);
+                    var code = replacee.length > 0 ? code.replace(replacee, "<u>" + replacee + "</u>") : code;
+                    var consumedLines = 1;
+                    textlines[i + 1] = "<code>" + code.replace(/ /gm, "&nbsp;") + "</code>";
+                    if (textlines[i + 2].lastIndexOf(filename, 0) != 0) {
+                        textlines[i + 2] = "<samp>" + indicator.replace(/~/g, " ").replace(/ /gm, "&nbsp;").replace(/\^/, "<span class='glyphicon glyphicon-arrow-up'></span>") + "</samp>";
+                        consumedLines++;
+                    }
+                    if (textlines[i + 3].lastIndexOf(filename, 0) != 0) {
+                        textlines[i + 3] = "<samp>" + textlines[i + 3].replace(/ /gm, "&nbsp;") + "</samp>";
+                        consumedLines++;
+                    }
+                    i += consumedLines;
                 }
-                i += consumedLines;
             }
         }
 
-        return textlines.join("<br>\n").replace(/(\d+:\d+): (note):(.*)$/gm, "<b>$1</b>: <span class='label label-info'>$2</span> <span class='text-info'>$3</span>").replace(/(\d+:\d+): (warning):(.*)$/gm, "<b>$1</b>: <span class='label label-warning'>$2</span> <span class='text-warning'>$3</span>").replace(/(\d+:\d+): (error):(.*)$/gm, "<b>$1</b>: <span class='label label-danger'>$2</span> <span class='text-danger'>$3</span>");
+        return textlines.join("<br>\n").replace(/(\d+).\d+: (note):(.*)$/gm, " <b>line $1</b>: <span class='label label-info'>$2</span> <span class='text-info'>$3</span>").replace(/(\d+).\d+: (warning):(.*)$/gm, " <b>line $1</b>: <span class='label label-warning'>$2</span> <span class='text-warning'>$3</span>").replace(/(\d+).\d+: (error):(.*)$/gm, " <b>line $1</b>: <span class='label label-danger'>$2</span> <span class='text-danger'>$3</span>");
     }
 
     function FormatFilename(text, fileName) {
@@ -444,6 +530,7 @@ $(function () {
     Aspen.Source = DB;
     Aspen.Context = Context;
     Aspen.Files = Files;
+    Aspen.Language = "en";
     Aspen.Debug = {};
     Aspen.Debug.DeleteAllKey = function () {
         while (localStorage.length > 1) {
@@ -647,6 +734,11 @@ $(function () {
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
     };
     $("#delete-all-file-menu").click(DeleteAllFilesFunction);
+
+    var JpModeCheckFunction = (function (e) {
+        Aspen.Language = this.checked ? "ja" : "en";
+    });
+    $("#JpModeCheck").click(JpModeCheckFunction);
 
     $(window).on("beforeunload", function (e) {
         DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
