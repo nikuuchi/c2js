@@ -410,7 +410,7 @@ module C2JS {
             = (()=>{ return "初期化されていない変数 " + RegExp.$1 + " が参照されました (変数は、参照する前に必ず初期値を代入しましょう)"; });
 
 
-        rules["expected \"FILENAME\" or <FILENAME>"]
+        rules['expected "FILENAME" or <FILENAME>']
             = (()=>{ return 'インクルードファイル名は "ファイル名" または <ファイル名> と書く必要があります'; });
         rules["('.*?') file not found"]
             = (()=>{ return "インクルードファイル " + RegExp.$1 + " が見つかりません。ファイル名が間違っているか、対応していないライブラリです"; });
@@ -553,7 +553,7 @@ module C2JS {
             .replace(/(\d+).\d+: (note):(.*)$/gm,    " <b>line $1</b>: <span class='label label-info'>$2</span> <span class='text-info'>$3</span>")
             .replace(/(\d+).\d+: (warning):(.*)$/gm, " <b>line $1</b>: <span class='label label-warning'>$2</span> <span class='text-warning'>$3</span>")
             .replace(/(\d+).\d+: (error):(.*)$/gm,   " <b>line $1</b>: <span class='label label-danger'>$2</span> <span class='text-danger'>$3</span>")
-            .replace(/(\d+).\d+: fatal (error):(.*)$/gm,   " <b>line $1</b>: <span class='label label-danger'>$2</span> <span class='text-danger'>$3</span>");
+            .replace(/(\d+).\d+: (fatal error):(.*)$/gm,   " <b>line $1</b>: <span class='label label-danger'>$2</span> <span class='text-danger'>$3</span>");
     }
 
 
