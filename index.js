@@ -421,6 +421,9 @@ var C2JS;
         rules["variable ('.*?') is uninitialized when used here"] = (function () {
             return "初期化されていない変数 " + RegExp.$1 + " が参照されました (変数は、参照する前に必ず初期値を代入しましょう)";
         });
+        rules["excess elements in array initializer"] = (function () {
+            return "配列初期化子の要素が配列のサイズに対して多すぎます";
+        });
 
         rules['expected "FILENAME" or <FILENAME>'] = (function () {
             return 'インクルードファイル名は "ファイル名" または <ファイル名> と書く必要があります';
@@ -462,7 +465,7 @@ var C2JS;
             return RegExp.$1 + "型には代入できません";
         });
         rules["array type ('.*?') is not assignable"] = (function () {
-            return "配列には代入できません";
+            return "配列には代入できません (配列の要素に代入するには添字を付けてください)";
         });
         rules["invalid operands to binary expression \\(('.*?') and ('.*?')\\)"] = (function () {
             return "不正な二項演算です (" + RegExp.$1 + "型と" + RegExp.$2 + "型の間に演算が定義されていません)";
@@ -514,6 +517,9 @@ var C2JS;
         });
         rules["must use '(.*?)' tag to refer to type ('.*?')"] = (function () {
             return wordtable[RegExp.$1] + "名の前に 'struct' が必要です";
+        });
+        rules["'(.*?)' declared as an array with a negative size"] = (function () {
+            return "負のサイズの配列は宣言できません";
         });
 
         rules["to match this '{'"] = (function () {
