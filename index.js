@@ -477,7 +477,7 @@ var C2JS;
         rules["expected '\\)'"] = (function () {
             return "括弧 ) が閉じていません";
         });
-        rules["extraneous ')'.*"] = (function () {
+        rules["extraneous '\\)'.*"] = (function () {
             return "閉じ括弧 ) が多すぎます";
         });
         rules["expected expression"] = (function () {
