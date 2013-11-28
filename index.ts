@@ -448,7 +448,7 @@ module C2JS {
             = (()=>{ return "閉じ中括弧 } が多すぎます"; });
         rules["expected '\\)'"]
             = (()=>{ return "括弧 ) が閉じていません"; });
-        rules["extraneous ')'.*"]
+        rules["extraneous '\\)'.*"]
             = (()=>{ return "閉じ括弧 ) が多すぎます"; });
         rules["expected expression"]
             = (()=>{ return "条件式が必要です"; });
