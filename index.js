@@ -368,10 +368,34 @@ var C2JS;
         rules["expression result unused"] = (function () {
             return "計算結果が使われていません";
         });
+        rules["equality comparison result unused"] = (function () {
+            return "比較結果が使われていません";
+        });
+        rules["self-comparison always evaluates to true"] = (function () {
+            return "自分自身との比較は常に真です (この式には意味がありません)";
+        });
+        rules["explicitly assigning a variable of type ('.*?') to itself"] = (function () {
+            return "自分自身への代入は意味がありません";
+        });
+        rules["using the result of an assignment as a condition without parentheses"] = (function () {
+            return "代入演算の結果を条件式に使用しています (代入 '=' と比較 '==' を間違えていませんか？)";
+        });
+        rules["(\\w+) (loop|statement) has empty body"] = (function () {
+            return RegExp.$1 + "文の中身がありません";
+        });
+        rules["type specifier missing, defaults to 'int'"] = (function () {
+            return "型名がありません (int型と判断しました…型名の省略は推奨されません)";
+        });
+        rules["implicitly declaring library function ('.*?').*"] = (function () {
+            return "標準ライブラリ関数 " + RegExp.$1 + " を暗黙的に使用しています (警告を消すには正しいヘッダファイルをインクルードしてください)";
+        });
+        rules["incompatible redeclaration of library function ('.*?')"] = (function () {
+            return "標準ライブラリ関数 " + RegExp.$1 + " を異なる定義で再宣言しています";
+        });
         rules["implicit declaration of function ('.*?') is invalid in C99"] = (function () {
             return "関数 " + RegExp.$1 + " は宣言されていません";
         });
-        rules["implicit conversion from ('.*?') to ('.*?') changes value from (.*?) to (.*?)"] = (function () {
+        rules["implicit conversion from ('.*?') to ('.*?') changes value from (.+?) to (.+)"] = (function () {
             return RegExp.$1 + "型から" + RegExp.$2 + "型への暗黙の変換により、値が " + RegExp.$3 + " から " + RegExp.$4 + "に変化します (警告を消すには (" + RegExp.$2 + ")" + RegExp.$3 + "と書き、明示的に変換してください)";
         });
         rules["incompatible (\\w+) to (\\w+) conversion returning ('.*?') from a function with result type ('.*?')"] = (function () {
@@ -380,9 +404,30 @@ var C2JS;
         rules["incompatible (\\w+) to (\\w+) conversion passing ('.*?') to parameter of type ('.*?')"] = (function () {
             return wordtable[RegExp.$1] + "から" + wordtable[RegExp.$2] + "への不正な変換です。引数は" + RegExp.$4 + "型ですが、" + RegExp.$3 + "型の値を渡そうとしています";
         });
+        rules["data argument not used by format string"] = (function () {
+            return "使われていない引数があります (フォーマット文字列を確認してください)";
+        });
+        rules["control reaches end of non-void function"] = (function () {
+            return "戻り値を返さないまま関数が終了しています (return文を書くか、戻り値の型をvoidに変更してください)";
+        });
+        rules["control may reaches end of non-void function"] = (function () {
+            return "戻り値を返さないまま関数が終了する可能性があります (すべての分岐で値を返していることを確認してください)";
+        });
+        rules["variable ('.*?') is uninitialized when used here"] = (function () {
+            return "初期化されていない変数 " + RegExp.$1 + " が参照されました (変数は、参照する前に必ず初期値を代入しましょう)";
+        });
 
+        rules["expected \"FILENAME\" or <FILENAME>"] = (function () {
+            return 'インクルードファイル名は "ファイル名" または <ファイル名> と書く必要があります';
+        });
+        rules["('.*?') file not found"] = (function () {
+            return "インクルードファイル " + RegExp.$1 + " が見つかりません。ファイル名が間違っているか、対応していないライブラリです";
+        });
         rules["void function ('.*?') should not return a value"] = (function () {
             return "関数 " + RegExp.$1 + " の戻り値はvoid型なので、値を返すことはできません。単にreturn;と書くか、戻り値の型を修正してください";
+        });
+        rules["non-void function ('.*?') should return a value"] = (function () {
+            return "関数 " + RegExp.$1 + " の戻り値はvoidではないため、値を返す必要があります。return文を書くか、戻り値の型をvoidに修正してください";
         });
         rules["too many arguments to function call, expected (\\d+), have (\\d+)"] = (function () {
             return RegExp.$1 + "引数の関数に" + RegExp.$2 + "個の引数を渡しています (引数が多すぎます)";
@@ -396,14 +441,59 @@ var C2JS;
         rules["use of undeclared identifier ('.*?')"] = (function () {
             return "変数 " + RegExp.$1 + " は宣言されていません。変数を使用するにはあらかじめ宣言を記述する必要があります";
         });
+        rules["expression is not assignable"] = (function () {
+            return "この式には代入できません";
+        });
+        rules["called object type ('.*?') is not a function or function pointer"] = (function () {
+            return "呼び出しを試みた型" + RegExp.$1 + "は関数ではありません";
+        });
+        rules["non-object type ('.*?') is not assignable"] = (function () {
+            return RegExp.$1 + "型には代入できません";
+        });
+        rules["invalid operands to binary expression \\(('.*?') and ('.*?')\\)"] = (function () {
+            return "不正な二項演算です (" + RegExp.$1 + "型と" + RegExp.$2 + "型の間に演算が定義されていません)";
+        });
+        rules["invalid suffix ('.*?') on integer constant"] = (function () {
+            return "整数定数に対する不正な接尾辞です";
+        });
+        rules["unknown type name 'include'"] = (function () {
+            return "未知の型名 'include' です (#include の間違いではありませんか？)";
+        });
+        rules["unknown type name ('.*?')"] = (function () {
+            return "未知の型名 " + RegExp.$1 + "です";
+        });
+        rules["redefinition of ('.*?').*"] = (function () {
+            return RegExp.$1 + " はすでに定義されています";
+        });
         rules["expected ';'.*"] = (function () {
             return "セミコロン ; が必要です";
         });
         rules["expected '}'"] = (function () {
             return "中括弧 } が閉じていません";
         });
+        rules["extraneous closing brace.*"] = (function () {
+            return "閉じ中括弧 } が多すぎます";
+        });
         rules["expected '\\)'"] = (function () {
             return "括弧 ) が閉じていません";
+        });
+        rules["extraneous ')'.*"] = (function () {
+            return "閉じ括弧 ) が多すぎます";
+        });
+        rules["expected expression"] = (function () {
+            return "条件式が必要です";
+        });
+        rules["expected parameter declarator"] = (function () {
+            return "引数の宣言が必要です";
+        });
+        rules["expected 'while'.*"] = (function () {
+            return "do-while文は while(...); で終わる必要があります";
+        });
+        rules["expected identifier or ('.*?')"] = (function () {
+            return "関数名、変数名、または" + RegExp.$1 + "が必要です";
+        });
+        rules["expected function body after function declarator"] = (function () {
+            return "関数の本体が必要です";
         });
         rules["expected ('.*?') after ('.*?')"] = (function () {
             return RegExp.$1 + " の後に " + RegExp.$2 + " が必要です";
@@ -417,6 +507,36 @@ var C2JS;
         });
         rules["('.*?') declared here"] = (function () {
             return RegExp.$1 + " の宣言は以下の通りです：";
+        });
+        rules["please include the header (<.*?>) or explicitly provide a declaration for ('.*?')"] = (function () {
+            return RegExp.$2 + " を使用するには #include " + RegExp.$1 + " と記述してください";
+        });
+        rules["put the semicolon on a separate line to silence this warning"] = (function () {
+            return "警告を消すには行末にセミコロンを書いてください";
+        });
+        rules["previous definition is here"] = (function () {
+            return "最初の定義は以下の通りです";
+        });
+        rules["use '==' to turn this assignment into an equality comparison"] = (function () {
+            return "値の比較には比較演算子 '==' を使用します";
+        });
+        rules["use '=' to turn this equality comparison into an assignment"] = (function () {
+            return "代入には代入演算子 '=' を使用します";
+        });
+        rules["place parentheses around the assignment to silence this warning"] = (function () {
+            return "間違いでない場合は、警告を消すために代入演算を()で囲んでください";
+        });
+        rules["initialize the variable ('.*?') to silence this warning"] = (function () {
+            return "警告を消すためには " + RegExp.$1 + " に初期値を代入してください";
+        });
+        rules["('.*?') is a builtin with type ('.*?')"] = (function () {
+            return RegExp.$1 + " は組み込み関数です";
+        });
+        rules["uninitialized use occurs here"] = (function () {
+            "ここで未初期化のまま参照されています";
+        });
+        rules["remove the 'if' if its condition is always false"] = (function () {
+            "本当に常に真でよい場合、if文は不要です";
         });
 
         for (var rule in rules) {
@@ -472,7 +592,7 @@ var C2JS;
             }
         }
 
-        return textlines.join("<br>\n").replace(/(\d+).\d+: (note):(.*)$/gm, " <b>line $1</b>: <span class='label label-info'>$2</span> <span class='text-info'>$3</span>").replace(/(\d+).\d+: (warning):(.*)$/gm, " <b>line $1</b>: <span class='label label-warning'>$2</span> <span class='text-warning'>$3</span>").replace(/(\d+).\d+: (error):(.*)$/gm, " <b>line $1</b>: <span class='label label-danger'>$2</span> <span class='text-danger'>$3</span>");
+        return textlines.join("<br>\n").replace(/(\d+).\d+: (note):(.*)$/gm, " <b>line $1</b>: <span class='label label-info'>$2</span> <span class='text-info'>$3</span>").replace(/(\d+).\d+: (warning):(.*)$/gm, " <b>line $1</b>: <span class='label label-warning'>$2</span> <span class='text-warning'>$3</span>").replace(/(\d+).\d+: (error):(.*)$/gm, " <b>line $1</b>: <span class='label label-danger'>$2</span> <span class='text-danger'>$3</span>").replace(/(\d+).\d+: fatal (error):(.*)$/gm, " <b>line $1</b>: <span class='label label-danger'>$2</span> <span class='text-danger'>$3</span>");
     }
 
     function FormatFilename(text, fileName) {
