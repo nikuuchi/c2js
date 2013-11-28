@@ -100,14 +100,29 @@ var C2JS;
             this.$output.append(val);
         };
 
+        Output.ExpandTab = function (val, width) {
+            var tsv = val.split("\t");
+            var ret = "";
+            var spase = "                ";
+            var n = tsv.length;
+            for (var i = 0; i < n; ++i) {
+                ret += tsv[i];
+                if (n - i > 1) {
+                    ret += spase.substr(0, width - ret.length % width);
+                }
+            }
+            return ret;
+        };
+
         Output.prototype.PrintFromC = function (val) {
+            val = Output.ExpandTab(val, 4);
             var obj = document.createElement('samp');
             if (typeof obj.textContent != 'undefined') {
                 obj.textContent = val;
             } else {
                 obj.innerText = val;
             }
-            this.$output.append("<samp>" + obj.innerHTML.replace(/ /, "&nbsp;") + "</samp><br>");
+            this.$output.append("<samp>" + obj.innerHTML.replace(/ /g, "&nbsp;") + "</samp><br>");
         };
 
         Output.prototype.PrintLn = function (val) {

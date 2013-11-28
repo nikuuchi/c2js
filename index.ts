@@ -106,14 +106,29 @@ module C2JS {
             this.$output.append(val);
         }
 
+        private static ExpandTab(val: string, width: number): string {
+            var tsv = val.split("\t");
+            var ret = "";
+            var spase = "                "; // 16 spaces
+            var n = tsv.length;
+            for(var i = 0; i < n; ++i){
+                ret += tsv[i];
+                if(n - i > 1){
+                    ret += spase.substr(0, width - ret.length % width);
+                }
+            }
+            return ret;
+        }
+
         PrintFromC(val: string): void {
+            val = Output.ExpandTab(val, 4);
             var obj = document.createElement('samp');
             if (typeof obj.textContent != 'undefined') {
                 obj.textContent = val;
             } else {
                 obj.innerText = val;
             }
-            this.$output.append("<samp>" + obj.innerHTML.replace(/ /, "&nbsp;") + "</samp><br>");
+            this.$output.append("<samp>" + obj.innerHTML.replace(/ /g, "&nbsp;") + "</samp><br>");
         }
 
         PrintLn(val: string): void {
