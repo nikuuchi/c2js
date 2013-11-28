@@ -368,6 +368,8 @@ module C2JS {
             "identifier":"変数または関数",
             "pointer":"ポインタ",
             "integer":"整数",
+            "struct":"構造体",
+            "union":"共用体",
         };
         var rules: any = {};
         rules["unused (\\w+) ('.*?')"]
@@ -413,17 +415,21 @@ module C2JS {
         rules['expected "FILENAME" or <FILENAME>']
             = (()=>{ return 'インクルードファイル名は "ファイル名" または <ファイル名> と書く必要があります'; });
         rules["('.*?') file not found"]
-            = (()=>{ return "インクルードファイル " + RegExp.$1 + " が見つかりません。ファイル名が間違っているか、対応していないライブラリです"; });
+            = (()=>{ return "インクルードファイル " + RegExp.$1 + " が見つかりません。ファイル名が間違っているか、対応していないライブラリです (コンパイルは中断されました)"; });
         rules["void function ('.*?') should not return a value"]
             = (()=>{ return "関数 " + RegExp.$1 + " の戻り値はvoid型なので、値を返すことはできません。単にreturn;と書くか、戻り値の型を修正してください"; });
         rules["non-void function ('.*?') should return a value"]
             = (()=>{ return "関数 " + RegExp.$1 + " の戻り値はvoidではないため、値を返す必要があります。return文を書くか、戻り値の型をvoidに修正してください"; });
         rules["too many arguments to function call, expected (\\d+), have (\\d+)"]
             = (()=>{ return RegExp.$1 + "引数の関数に" + RegExp.$2 + "個の引数を渡しています (引数が多すぎます)"; });
+        rules["too many arguments to function call, single argument ('.*?'), have (\\d+) arguments"]
+            = (()=>{ return "1引数の関数に" + RegExp.$2 + "個の引数を渡しています (引数が多すぎます)"; });
         rules["too few arguments to function call, expected (\\d+), have 0"]
             = (()=>{ return RegExp.$1 + "引数の関数に引数を渡していません (引数が少なすぎます)"; });
         rules["too few arguments to function call, expected (\\d+), have (\\d+)"]
             = (()=>{ return RegExp.$1 + "引数の関数に" + RegExp.$2 + "個の引数を渡しています (引数が少なすぎます)"; });
+        rules["passing ('.*?') to parameter of incompatible type ('.*?')"]
+            = (()=>{ return RegExp.$2 + " 型の引数に対し、変換できない " + RegExp.$2 + " 型の値を渡すことはできません"; });
         rules["use of undeclared identifier ('.*?')"]
             = (()=>{ return "変数 " + RegExp.$1 + " は宣言されていません。変数を使用するにはあらかじめ宣言を記述する必要があります"; });
         rules["expression is not assignable"]
@@ -432,6 +438,8 @@ module C2JS {
             = (()=>{ return "呼び出しを試みた型" + RegExp.$1 + "は関数ではありません"; });
         rules["non-object type ('.*?') is not assignable"]
             = (()=>{ return RegExp.$1 + "型には代入できません"; });
+        rules["array type ('.*?') is not assignable"]
+            = (()=>{ return "配列には代入できません"; });
         rules["invalid operands to binary expression \\(('.*?') and ('.*?')\\)"]
             = (()=>{ return "不正な二項演算です (" + RegExp.$1 + "型と" + RegExp.$2 + "型の間に演算が定義されていません)"; });
         rules["invalid suffix ('.*?') on integer constant"]
@@ -439,7 +447,7 @@ module C2JS {
         rules["unknown type name 'include'"]
             = (()=>{ return "未知の型名 'include' です (#include の間違いではありませんか？)"; });
         rules["unknown type name ('.*?')"]
-            = (()=>{ return "未知の型名 " + RegExp.$1 + "です"; });
+            = (()=>{ return "未知の型名 " + RegExp.$1 + "　です"; });
         rules["redefinition of ('.*?').*"]
             = (()=>{ return RegExp.$1 + " はすでに定義されています"; });
         rules["expected ';'.*"]
@@ -459,11 +467,13 @@ module C2JS {
         rules["expected 'while'.*"]
             = (()=>{ return "do-while文は while(...); で終わる必要があります"; });
         rules["expected identifier or ('.*?')"]
-            = (()=>{ return "関数名、変数名、または" + RegExp.$1 + "が必要です"; });
+            = (()=>{ return "関数名、変数名、または " + RegExp.$1 + " が必要です"; });
         rules["expected function body after function declarator"]
             = (()=>{ return "関数の本体が必要です"; });
         rules["expected ('.*?') after ('.*?')"]
             = (()=>{ return RegExp.$1 + " の後に " + RegExp.$2 + " が必要です"; });
+        rules["must use '(.*?)' tag to refer to type ('.*?')"]
+            = (()=>{ return wordtable[RegExp.$1] + "名の前に 'struct' が必要です"; });
 
         rules["to match this '{'"]
             = (()=>{ return "ブロックは以下の位置で開始しています"; });
@@ -471,6 +481,8 @@ module C2JS {
             = (()=>{ return "括弧は以下の位置で開いています"; });
         rules["('.*?') declared here"]
             = (()=>{ return RegExp.$1 + " の宣言は以下の通りです："; });
+        rules["passing argument to parameter ('.*?') here"]
+            = (()=>{ return "引数 " + RegExp.$1 + " の宣言は以下の通りです："; });
         rules["please include the header (<.*?>) or explicitly provide a declaration for ('.*?')"]
             = (()=>{ return RegExp.$2 + " を使用するには #include " + RegExp.$1 + " と記述してください"; });
         rules["put the semicolon on a separate line to silence this warning"]
