@@ -400,6 +400,8 @@ module C2JS {
             = (()=>{ return wordtable[RegExp.$1] + "から" + wordtable[RegExp.$2] + "への不正な変換です。引数は" + RegExp.$4 + "型ですが、" + RegExp.$3 + "型の値を渡そうとしています"; });
        　rules["data argument not used by format string"]
             = (()=>{ return "使われていない引数があります (フォーマット文字列を確認してください)"; });
+       　rules["more '%' conversions than data arguments"]
+            = (()=>{ return "指定されたフォーマット文字列に対して引数が足りません (フォーマット文字列を確認してください)"; });
        　rules["control reaches end of non-void function"]
             = (()=>{ return "戻り値を返さないまま関数が終了しています (return文を書くか、戻り値の型をvoidに変更してください)"; });
        　rules["control may reaches end of non-void function"]

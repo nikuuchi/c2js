@@ -407,6 +407,9 @@ var C2JS;
         rules["data argument not used by format string"] = (function () {
             return "使われていない引数があります (フォーマット文字列を確認してください)";
         });
+        rules["more '%' conversions than data arguments"] = (function () {
+            return "指定されたフォーマット文字列に対して引数が足りません (フォーマット文字列を確認してください)";
+        });
         rules["control reaches end of non-void function"] = (function () {
             return "戻り値を返さないまま関数が終了しています (return文を書くか、戻り値の型をvoidに変更してください)";
         });
