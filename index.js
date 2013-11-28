@@ -82,7 +82,7 @@ var C2JS;
         };
 
         Editor.prototype.ContainsMultiByteSpace = function () {
-            return this.editor.getValue().GetValue().match(/　/);
+            return this.editor.getValue().match(/　/);
         };
 
         Editor.prototype.ReplaceMultiByteSpace = function () {
@@ -107,7 +107,7 @@ var C2JS;
             } else {
                 obj.innerText = val;
             }
-            this.$output.append("<samp>" + obj.innerHTML.split(/[\r\n|\r|\n]/g).join("</samp><br><samp>") + "</samp>");
+            this.$output.append("<samp>" + obj.innerHTML.replace(/ /, "&nbsp;") + "</samp><br>");
         };
 
         Output.prototype.PrintLn = function (val) {
@@ -358,7 +358,7 @@ var C2JS;
                 var replacee = code.substring(begin, end);
                 var code = replacee.length > 0 ? code.replace(replacee, "<strong>" + replacee + "</strong>") : code;
                 textlines[i + 1] = "<code>" + code.replace(/ /gm, "&nbsp;") + "</code>";
-                textlines[i + 2] = "<samp>" + indicator.replace("~", " ").replace(/ /gm, "&nbsp;").replace(/(&nbsp;)?\^/, "<span class='glyphicon glyphicon-arrow-up'></span>") + "</samp>";
+                textlines[i + 2] = "<samp>" + indicator.replace("~", " ").replace(/ /gm, "&nbsp;").replace(/\^/, "<span class='glyphicon glyphicon-arrow-up'></span>") + "</samp>";
                 if (textlines[i + 3].lastIndexOf(filename, 0) != 0) {
                     textlines[i + 3] = "<samp>" + textlines[i + 3].replace(/ /gm, "&nbsp;") + "</samp>";
                 }
@@ -526,6 +526,7 @@ $(function () {
     };
 
     $("#compile").click(CompileCallback);
+    ($("#compile")).tooltip({ placement: "bottom", html: true });
     document.onkeydown = function (ev) {
         if (ev.keyCode == 13 && ev.ctrlKey) {
             CompileCallback(ev);

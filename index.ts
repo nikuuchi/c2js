@@ -90,7 +90,7 @@ module C2JS {
         }
 
         ContainsMultiByteSpace(): boolean {
-            return this.editor.getValue().GetValue().match(/　/);
+            return this.editor.getValue().match(/　/);
         }
 
         ReplaceMultiByteSpace(): void {
@@ -113,7 +113,7 @@ module C2JS {
             } else {
                 obj.innerText = val;
             }
-            this.$output.append("<samp>" + obj.innerHTML.split(/[\r\n|\r|\n]/g).join("</samp><br><samp>") + "</samp>");
+            this.$output.append("<samp>" + obj.innerHTML.replace(/ /, "&nbsp;") + "</samp><br>");
         }
 
         PrintLn(val: string): void {
@@ -370,7 +370,7 @@ module C2JS {
                 textlines[i+1] = "<code>" + code.replace(/ /gm, "&nbsp;") + "</code>";
                 textlines[i+2] = "<samp>" + indicator.replace("~", " ")
                                           .replace(/ /gm, "&nbsp;")
-                                          .replace(/(&nbsp;)?\^/, "<span class='glyphicon glyphicon-arrow-up'></span>") + "</samp>";
+                                          .replace(/\^/, "<span class='glyphicon glyphicon-arrow-up'></span>") + "</samp>";
                 if(textlines[i+3].lastIndexOf(filename, 0) != 0){
                     textlines[i+3] = "<samp>" + textlines[i+3].replace(/ /gm, "&nbsp;") + "</samp>";
                 }
@@ -542,6 +542,7 @@ $(function () {
     };
 
     $("#compile").click(CompileCallback);
+    (<any>$("#compile")).tooltip({placement: "bottom", html: true});
     document.onkeydown = (ev: KeyboardEvent) => {
         if(ev.keyCode == 13/*Enter*/ && ev.ctrlKey) {
             CompileCallback(ev);
