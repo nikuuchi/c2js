@@ -733,6 +733,17 @@ $(function () {
         Editor.Enable();
     };
 
+    var FindErrorNumbersInErrorMessage = function (message) {
+        var errorLineNumbers = [];
+        jQuery.each(message.split(".c"), (function (k, v) {
+            var match = v.match(/:(\d+):\d+:\s+error/);
+            if (match && match[1]) {
+                errorLineNumbers.push(match[1]);
+            }
+        }));
+        return errorLineNumbers;
+    };
+
     var CompileCallback = function (e) {
         if (Files.Empty())
             return;
@@ -747,47 +758,36 @@ $(function () {
         Output.Clear();
         Output.Prompt();
         Output.PrintLn('gcc ' + file.GetName() + ' -o ' + file.GetBaseName());
-        try  {
-            DisableUI();
-            Editor.RemoveAllErrorLine();
+        DisableUI();
+        Editor.RemoveAllErrorLine();
 
-            C2JS.Compile(src, opt, file.GetName(), changeFlag, Context, function (res) {
-                try  {
-                    changeFlag = false;
-                    if (res == null) {
-                        Output.PrintErrorLn('Sorry, the server is something wrong.');
-                        return;
-                    }
-                    if (res.error.length > 0) {
-                        Output.PrintLn(C2JS.FormatClangErrorMessage(res.error, file.GetBaseName()));
-                        var errorLineNumbers = [];
-                        jQuery.each(res.error.split(".c"), (function (k, v) {
-                            var match = v.match(/:(\d+):\d+:\s+error/);
-                            if (match && match[1]) {
-                                errorLineNumbers.push(match[1]);
-                            }
-                        }));
-                        Editor.SetErrorLines(errorLineNumbers);
-                    }
-                    Output.Prompt();
-
-                    Context.error = res.error;
-                    if (!res.error.match("error:")) {
-                        Output.PrintLn('./' + file.GetBaseName());
-                        C2JS.Run(res.source, Context, Output);
-                    } else {
-                        Context.source = null;
-                    }
-                } finally {
-                    EnableUI();
+        C2JS.Compile(src, opt, file.GetName(), changeFlag, Context, function (res) {
+            try  {
+                changeFlag = false;
+                if (res == null) {
+                    Output.PrintErrorLn('Sorry, the server is something wrong.');
+                    return;
                 }
-            }, function () {
-                Output.PrintErrorLn('Sorry, the server is something wrong.');
+                if (res.error.length > 0) {
+                    Output.PrintLn(C2JS.FormatClangErrorMessage(res.error, file.GetBaseName()));
+                    Editor.SetErrorLines(FindErrorNumbersInErrorMessage(res.error));
+                }
+                Output.Prompt();
+
+                Context.error = res.error;
+                if (!res.error.match("error:")) {
+                    Output.PrintLn('./' + file.GetBaseName());
+                    C2JS.Run(res.source, Context, Output);
+                } else {
+                    Context.source = null;
+                }
+            } finally {
                 EnableUI();
-            });
-        } finally {
+            }
+        }, function () {
+            Output.PrintErrorLn('Sorry, the server is something wrong.');
             EnableUI();
-        }
+        });
     };
 
     $("#compile").click(CompileCallback);
