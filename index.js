@@ -792,19 +792,14 @@ $(function () {
 
     $("#compile").click(CompileCallback);
     ($("#compile")).tooltip({ placement: "bottom", html: true });
-    document.onkeydown = function (ev) {
-        if (ev.keyCode == 13 && ev.ctrlKey) {
-            CompileCallback(ev);
-            return false;
-        }
-    };
 
-    $("#save-file-menu").click(function (e) {
+    var SaveFunction = function (e) {
         if (Files.Empty())
             return;
         var blob = new Blob([Editor.GetValue()], { type: 'text/plain; charset=UTF-8' });
         saveAs(blob, Files.GetCurrent().GetName());
-    });
+    };
+    $("#save-file-menu").click(SaveFunction);
 
     $("#open-file-menu").click(function (e) {
         $("#file-open-dialog").click();
@@ -919,6 +914,31 @@ $(function () {
         Aspen.Language = this.checked ? "ja" : "en";
     });
     $("#JpModeCheck").click(JpModeCheckFunction);
+
+    document.onkeydown = function (ev) {
+        if (ev.ctrlKey) {
+            if (ev.keyCode == 13 && ev.ctrlKey) {
+                CompileCallback(ev);
+                return false;
+            } else if (ev.keyCode == 78 && ev.ctrlKey) {
+                CreateFileFunction(ev);
+                return false;
+            } else if (ev.keyCode == 87 && ev.ctrlKey) {
+                DeleteFileFunction(ev);
+                return false;
+            } else if (ev.keyCode == 82 && ev.ctrlKey) {
+                RenameFunction(ev);
+                return false;
+            } else if (ev.keyCode == 83 && ev.ctrlKey) {
+                SaveFunction(ev);
+                return false;
+            } else if (ev.keyCode == 79 && ev.ctrlKey) {
+                console.log("hi");
+                $("#file-open-dialog").click();
+                return false;
+            }
+        }
+    };
 
     $(window).on("beforeunload", function (e) {
         DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
