@@ -46,35 +46,35 @@ html
                 span.glyphicon.glyphicon-folder-open
                 | &nbsp;
                 | Open File ...
-            li
+            li.disabled-on-files-empty
               a#save-file-menu(href='#')
                 span.glyphicon.glyphicon-floppy-save
                 | &nbsp;
                 | Save
-            li
+            li.disabled-on-files-empty
               a#rename-menu(href='#')
                 span.glyphicon.glyphicon-edit
                 | &nbsp;
                 | Rename ...
             li.divider
-            li
+            li.disabled-on-files-empty
               a#delete-file-menu(href='#')
                 span.glyphicon.glyphicon-remove
                 | &nbsp;
                 | Delete File
-            li
+            li.disabled-on-files-empty
               a#delete-all-file-menu(href='#')
                 span.glyphicon.glyphicon-remove
                 | &nbsp;
                 | Delete All Files
           | &nbsp;
-          button#compile.btn.navbar-btn.btn-primary(type='button', data-toggle="tooltip", title="Run&nbsp;(Ctrl-Enter)", onContextmenu="return false")
+          button#compile.btn.navbar-btn.btn-primary.disabled-on-files-empty(type='button', data-toggle="tooltip", title="Run&nbsp;(Ctrl-Enter)", onContextmenu="return false")
             | &nbsp;
             span.glyphicon.glyphicon-play
             | &nbsp;
             | Run
       +template('file-list-template')
-        li
+        li.file-tab
           a(href='#',id='${BaseName}') ${Name}
           //a(href='#', id='close${BaseName}')
             span.glyphicon.glyphicon-remove

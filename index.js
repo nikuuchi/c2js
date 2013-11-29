@@ -40,6 +40,10 @@ var C2JS;
             this.editor.setValue(text);
         };
 
+        Editor.prototype.Clear = function () {
+            this.SetValue("");
+        };
+
         Editor.prototype.SetSize = function (size) {
             this.editor.setSize(size.width, size.height);
             this.size = size;
@@ -212,11 +216,15 @@ var C2JS;
         };
 
         FileCollection.prototype.RemoveActiveClass = function () {
-            $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).removeClass('active');
+            if (!this.Empty()) {
+                $("#" + this.GetCurrent().GetBaseName()).parent().removeClass('active');
+            }
         };
 
         FileCollection.prototype.AddActiveClass = function () {
-            $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).addClass('active');
+            if (!this.Empty()) {
+                $("#" + this.GetCurrent().GetBaseName()).parent().addClass('active');
+            }
         };
 
         FileCollection.prototype.SetCurrent = function (BaseName) {
@@ -229,7 +237,7 @@ var C2JS;
 
         FileCollection.prototype.Show = function (callback) {
             this.UI.prepend($('#file-list-template').tmpl(this.FileModels));
-            $($("#" + this.GetCurrent().GetBaseName()).parent().get(0)).addClass('active');
+            this.AddActiveClass();
             for (var i = 0; i < this.FileModels.length; i++) {
                 $("#" + this.FileModels[i].GetBaseName()).click(callback);
             }
@@ -246,46 +254,38 @@ var C2JS;
         };
 
         FileCollection.prototype.Rename = function (oldBaseName, newname, contents, Callback, DB) {
-            this.Remove(oldBaseName, Callback);
+            this.Remove(oldBaseName);
             var file = new FileModel(newname);
             this.Append(file, Callback);
             this.SetCurrent(file.GetBaseName());
             DB.Save(file.GetName(), contents);
         };
 
-        FileCollection.prototype.IsRemove = function (BaseName) {
-            return confirm('The item "' + BaseName + '.c" will be delete immediately. Are you sure you want to continue?');
-        };
-
-        FileCollection.prototype.Remove = function (BaseName, Callback) {
-            var i = this.GetIndexOf(BaseName);
-            i--;
-            if (i < 0) {
-                i = 0;
-            }
-            if (this.FileModels.length > 1) {
-                this.SetCurrent(this.FileModels[i].GetBaseName());
+        FileCollection.prototype.Remove = function (BaseName) {
+            if (this.FileModels.length > 0) {
+                var removedIndex = this.GetIndexOf(BaseName);
+                var newIndex = removedIndex <= 0 ? 0 : removedIndex - 1;
+                this.SetCurrent(this.FileModels[newIndex].GetBaseName());
                 this.RemoveByBaseName(BaseName);
-                this.AddActiveClass();
-            } else if (this.FileModels.length == 1) {
-                this.SetCurrent(this.FileModels[0].GetBaseName());
-                this.RemoveByBaseName(BaseName);
-
-                this.ActiveFileName = 'program.c';
-                var file = new FileModel(this.ActiveFileName);
-                this.ActiveFileIndex = 0;
-                localStorage.setItem(this.defaultNameKey, this.ActiveFileName);
-                localStorage.setItem(this.ActiveFileName, "");
-                this.Append(file, Callback);
                 this.AddActiveClass();
             }
         };
 
-        FileCollection.prototype.GetLength = function () {
-            return this.FileModels.length;
+        FileCollection.prototype.Clear = function () {
+            if (this.FileModels.length > 0) {
+                $(".file-tab").remove();
+                this.FileModels = [];
+                for (var name in localStorage) {
+                    localStorage.removeItem(name);
+                }
+            }
         };
 
-        FileCollection.prototype.RenameExistName = function (Name) {
+        FileCollection.prototype.Empty = function () {
+            return this.FileModels.length == 0;
+        };
+
+        FileCollection.prototype.MakeUniqueName = function (Name) {
             for (var i = 0; i < this.FileModels.length; i++) {
                 if (this.FileModels[i].GetName() == Name) {
                     return Name.replace(/\.c/g, "_1.c");
@@ -401,10 +401,13 @@ var C2JS;
             return RegExp.$1 + "型から" + RegExp.$2 + "型への暗黙の変換により、値が " + RegExp.$3 + " から " + RegExp.$4 + "に変化します (警告を消すには (" + RegExp.$2 + ")" + RegExp.$3 + "と書き、明示的に変換してください)";
         });
         rules["incompatible (\\w+) to (\\w+) conversion returning ('.*?') from a function with result type ('.*?')"] = (function () {
-            return wordtable[RegExp.$1] + "から" + wordtable[RegExp.$2] + "への不正な変換です。戻り値は" + RegExp.$4 + "型ですが、" + RegExp.$3 + "型の値を返そうとしています";
+            return wordtable[RegExp.$1] + "から" + wordtable[RegExp.$2] + "への不正な変換です。戻り値は " + RegExp.$4 + " 型ですが、" + RegExp.$3 + " 型の値を返そうとしています";
         });
         rules["incompatible (\\w+) to (\\w+) conversion passing ('.*?') to parameter of type ('.*?')"] = (function () {
-            return wordtable[RegExp.$1] + "から" + wordtable[RegExp.$2] + "への不正な変換です。引数は" + RegExp.$4 + "型ですが、" + RegExp.$3 + "型の値を渡そうとしています";
+            return wordtable[RegExp.$1] + "から" + wordtable[RegExp.$2] + "への不正な変換です。引数は " + RegExp.$4 + " 型ですが、" + RegExp.$3 + " 型の値を渡そうとしています";
+        });
+        rules["incompatible (\\w+) to (\\w+) conversion assigning to ('.*?') from ('.*?')"] = (function () {
+            return wordtable[RegExp.$1] + "から" + wordtable[RegExp.$2] + "への不正な変換です。 " + RegExp.$3 + " 型の変数に" + RegExp.$4 + " 型の値を代入しています";
         });
         rules["data argument not used by format string"] = (function () {
             return "使われていない引数があります (フォーマット文字列を確認してください)";
@@ -660,6 +663,11 @@ var C2JS;
         return confirm('All items will be delete immediately. Are you sure you want to continue?');
     }
     C2JS.ConfirmAllRemove = ConfirmAllRemove;
+
+    function ConfirmToRemove(BaseName) {
+        return confirm('The item "' + BaseName + '.c" will be delete immediately. Are you sure you want to continue?');
+    }
+    C2JS.ConfirmToRemove = ConfirmToRemove;
 })(C2JS || (C2JS = {}));
 
 var Aspen = {};
@@ -693,8 +701,10 @@ $(function () {
 
     var changeFlag = true;
     Editor.OnChange(function (e) {
-        changeFlag = true;
-        DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
+        if (!Files.Empty()) {
+            changeFlag = true;
+            DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
+        }
     });
 
     var ChangeCurrentFile = function (e) {
@@ -724,6 +734,8 @@ $(function () {
     };
 
     var CompileCallback = function (e) {
+        if (Files.Empty())
+            return;
         if (Editor.ContainsMultiByteSpace()) {
             if (confirm('ソースコード中に全角スペースが含まれています。半角スペースに置換しますか？\n(C言語では全角スペースを使えません)')) {
                 Editor.ReplaceMultiByteSpace();
@@ -788,6 +800,8 @@ $(function () {
     };
 
     $("#save-file-menu").click(function (e) {
+        if (Files.Empty())
+            return;
         var blob = new Blob([Editor.GetValue()], { type: 'text/plain; charset=UTF-8' });
         saveAs(blob, Files.GetCurrent().GetName());
     });
@@ -813,7 +827,7 @@ $(function () {
             };
             reader.onload = function (e) {
                 DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
-                var fileModel = new C2JS.FileModel(Files.RenameExistName(file.name));
+                var fileModel = new C2JS.FileModel(Files.MakeUniqueName(file.name));
                 Files.Append(fileModel, ChangeCurrentFile);
                 Files.SetCurrent(fileModel.GetBaseName());
                 Editor.SetValue((e.target).result);
@@ -823,6 +837,18 @@ $(function () {
             reader.readAsText(file, 'utf-8');
         }
     });
+
+    var OnFilesBecomeEmpty = function () {
+        $("#delete-file").hide();
+        $(".disabled-on-files-empty").addClass("disabled");
+        Editor.Clear();
+        Editor.Disable();
+    };
+    var OnFilesBecomeNotEmpty = function () {
+        $("#delete-file").show();
+        $(".disabled-on-files-empty").removeClass("disabled");
+        Editor.Enable();
+    };
 
     var CreateFileFunction = function (e) {
         var filename = prompt("Please enter the file name.", C2JS.CheckFileName("", DB));
@@ -834,6 +860,7 @@ $(function () {
         var file = new C2JS.FileModel(filename);
         Files.Append(file, ChangeCurrentFile);
         Files.SetCurrent(file.GetBaseName());
+        OnFilesBecomeNotEmpty();
         Editor.ResetHelloWorld();
         Editor.ClearHistory();
     };
@@ -842,6 +869,8 @@ $(function () {
     $("#create-file-menu").click(CreateFileFunction);
 
     var RenameFunction = function (e) {
+        if (Files.Empty())
+            return;
         DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
         var oldfilebasename = Files.GetCurrent().GetBaseName();
         var oldfilecontents = Editor.GetValue();
@@ -858,26 +887,31 @@ $(function () {
     $("#rename-menu").click(RenameFunction);
 
     var DeleteFileFunction = function (e) {
+        if (Files.Empty())
+            return;
         var BaseName = Files.GetCurrent().GetBaseName();
-        if (Files.IsRemove(BaseName)) {
-            Files.Remove(BaseName, ChangeCurrentFile);
+        if (C2JS.ConfirmToRemove(BaseName)) {
+            Files.Remove(BaseName);
+            if (Files.Empty()) {
+                OnFilesBecomeEmpty();
+            } else {
+                Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
+            }
         }
-        Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
     };
+
     ($("#delete-file")).tooltip({ placement: "bottom", html: true });
     $("#delete-file").click(DeleteFileFunction);
     $("#delete-file-menu").click(DeleteFileFunction);
 
     var DeleteAllFilesFunction = function (e) {
+        if (Files.Empty())
+            return;
         var BaseName = Files.GetCurrent().GetBaseName();
         if (C2JS.ConfirmAllRemove()) {
-            while (Files.GetLength() > 1) {
-                Files.Remove(BaseName, ChangeCurrentFile);
-                BaseName = Files.GetCurrent().GetBaseName();
-            }
-            Files.Remove(BaseName, ChangeCurrentFile);
+            Files.Clear();
         }
-        Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
+        OnFilesBecomeEmpty();
     };
     $("#delete-all-file-menu").click(DeleteAllFilesFunction);
 
