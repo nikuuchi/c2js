@@ -861,25 +861,31 @@ $(function () {
 
     document.onkeydown = (ev: KeyboardEvent) => {
         if(ev.ctrlKey) {
-            if(ev.keyCode == 13/*Enter*/ && ev.ctrlKey) {
-                CompileCallback(ev);
-                return false;
-            } else if(ev.keyCode == 78/*n*/ && ev.ctrlKey) {
-                CreateFileFunction(ev);
-                return false;
-            } else if(ev.keyCode == 87/*w*/ && ev.ctrlKey) {
-                DeleteFileFunction(ev);
-                return false;
-            } else if(ev.keyCode == 82/*r*/ && ev.ctrlKey) {
-                RenameFunction(ev);
-                return false;
-            } else if(ev.keyCode == 83/*s*/ && ev.ctrlKey) {
-                SaveFunction(ev);
-                return false;
-            } else if(ev.keyCode == 79/*o*/ && ev.ctrlKey) {
-                console.log("hi");
-                $("#file-open-dialog").click();
-                return false;
+            switch(ev.keyCode){
+                case 13:/*Enter*/
+                    CompileCallback(ev);
+                    ev.preventDefault();
+                    return;
+                case 78:/*n*/
+                    CreateFileFunction(ev);
+                    ev.preventDefault();
+                    return;
+                case 87:/*w*/
+                    DeleteFileFunction(ev);
+                    ev.preventDefault();
+                    return;
+                case 82:/*r*/
+                    RenameFunction(ev);
+                    ev.preventDefault();
+                    return;
+                case 83:/*s*/
+                    SaveFunction(ev);
+                    ev.preventDefault();
+                    return;
+                case 79:/*o*/
+                    $("#file-open-dialog").click();
+                    ev.preventDefault();
+                    return;
             }
         }
     };

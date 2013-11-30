@@ -917,25 +917,31 @@ $(function () {
 
     document.onkeydown = function (ev) {
         if (ev.ctrlKey) {
-            if (ev.keyCode == 13 && ev.ctrlKey) {
-                CompileCallback(ev);
-                return false;
-            } else if (ev.keyCode == 78 && ev.ctrlKey) {
-                CreateFileFunction(ev);
-                return false;
-            } else if (ev.keyCode == 87 && ev.ctrlKey) {
-                DeleteFileFunction(ev);
-                return false;
-            } else if (ev.keyCode == 82 && ev.ctrlKey) {
-                RenameFunction(ev);
-                return false;
-            } else if (ev.keyCode == 83 && ev.ctrlKey) {
-                SaveFunction(ev);
-                return false;
-            } else if (ev.keyCode == 79 && ev.ctrlKey) {
-                console.log("hi");
-                $("#file-open-dialog").click();
-                return false;
+            switch (ev.keyCode) {
+                case 13:
+                    CompileCallback(ev);
+                    ev.preventDefault();
+                    return;
+                case 78:
+                    CreateFileFunction(ev);
+                    ev.preventDefault();
+                    return;
+                case 87:
+                    DeleteFileFunction(ev);
+                    ev.preventDefault();
+                    return;
+                case 82:
+                    RenameFunction(ev);
+                    ev.preventDefault();
+                    return;
+                case 83:
+                    SaveFunction(ev);
+                    ev.preventDefault();
+                    return;
+                case 79:
+                    $("#file-open-dialog").click();
+                    ev.preventDefault();
+                    return;
             }
         }
     };
