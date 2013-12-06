@@ -655,31 +655,37 @@ $(function () {
         }
     });
 
+    var running = false;
+
+    var DisableUI = () => {
+        $(".disabled-on-running").addClass("disabled");
+        Editor.Disable();
+        running = true;
+    }
+
+    var EnableUI = () => {
+        $(".disabled-on-running").removeClass("disabled");
+        Editor.Enable();
+        running = false;
+    }
+
     var ChangeCurrentFile = (e: Event) => {
+        if(running) return
         Files.SetCurrent((<any>e.target).id);
         Editor.SetValue(DB.Load(Files.GetCurrent().GetName()));
         Editor.ClearHistory();
     };
 
     Files.Show(ChangeCurrentFile);
-
     Output.Prompt();
 
-    var DisableUI = () => {
-        //$("#file-name").attr("disabled", "disabled"); //FIXME tab disable
-        $("#open-file-menu").addClass("disabled");
-        $("#save-file-menu").addClass("disabled");
-        $("#compile").addClass("disabled");
-        Editor.Disable();
-    }
-
-    var EnableUI = () => {
-        //$("#file-name").removeAttr("disabled"); //FIXME tab enable
-        $("#open-file-menu").removeClass("disabled");
-        $("#save-file-menu").removeClass("disabled");
-        $("#compile").removeClass("disabled");
-        Editor.Enable();
-    }
+    Aspen.Debug.SetRunning = (flag: boolean) => {
+        if(flag){
+            DisableUI();
+        }else{
+            EnableUI();
+        }
+    };
 
     var FindErrorNumbersInErrorMessage = (message: string) => {
         var errorLineNumbers = [];
@@ -693,7 +699,7 @@ $(function () {
     }
 
     var CompileCallback = (e: Event)=> {
-        if(Files.Empty()) return;
+        if(Files.Empty() || running) return;
         if(Editor.ContainsMultiByteSpace()) {
             if(confirm('ソースコード中に全角スペースが含まれています。半角スペースに置換しますか？\n(C言語では全角スペースを使えません)')) {
                 Editor.ReplaceMultiByteSpace();
@@ -793,6 +799,7 @@ $(function () {
     };
 
     var CreateFileFunction = (e: Event) => {
+        if(running) return;
         var filename = prompt("Please enter the file name.", C2JS.CheckFileName("", DB));
         filename = C2JS.CheckFileName(filename, DB);
         if(filename == null) {
@@ -811,7 +818,7 @@ $(function () {
     $("#create-file-menu").click(CreateFileFunction);
 
     var RenameFunction = (e: Event) => {
-        if(Files.Empty()) return;
+        if(Files.Empty() || running) return;
         DB.Save(Files.GetCurrent().GetName(), Editor.GetValue());
         var oldfilebasename = Files.GetCurrent().GetBaseName();
         var oldfilecontents = Editor.GetValue();
@@ -828,7 +835,7 @@ $(function () {
     $("#rename-menu").click(RenameFunction);
 
     var DeleteFileFunction = (e: Event) => {
-        if(Files.Empty()) return;
+        if(Files.Empty() || running) return;
         var BaseName = Files.GetCurrent().GetBaseName();
         if(C2JS.ConfirmToRemove(BaseName)) {
             Files.Remove(BaseName);
@@ -845,7 +852,7 @@ $(function () {
     $("#delete-file-menu").click(DeleteFileFunction);
 
     var DeleteAllFilesFunction = (e: Event) => {
-        if(Files.Empty()) return;
+        if(Files.Empty() || running) return;
         var BaseName = Files.GetCurrent().GetBaseName();
         if(C2JS.ConfirmAllRemove()) {
             Files.Clear();

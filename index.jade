@@ -28,7 +28,7 @@ html
         .navbar-header.pull-right
           a.navbar-brand Aspen
         .navbar-collapse
-          button.btn.navbar-btn.btn-default(type='button', data-toggle='dropdown', onContextmenu="return false")
+          button.btn.navbar-btn.btn-default.disabled-on-running(type='button', data-toggle='dropdown', onContextmenu="return false")
               | &nbsp;
               span.glyphicon.glyphicon-file
               | &nbsp;
@@ -73,22 +73,22 @@ html
                 | &nbsp;
                 | Delete All Files
           | &nbsp;
-          button#compile.btn.navbar-btn.btn-primary.disabled-on-files-empty(type='button', data-toggle="tooltip", title="Run&nbsp;(Ctrl-Enter)", onContextmenu="return false")
+          button#compile.btn.navbar-btn.btn-primary.disabled-on-files-empty.disabled-on-running(type='button', data-toggle="tooltip", title="Run&nbsp;(Ctrl-Enter)", onContextmenu="return false")
             | &nbsp;
             span.glyphicon.glyphicon-play
             | &nbsp;
             | Run
       +template('file-list-template')
-        li.file-tab
+        li.file-tab.disabled-on-running
           a(href='#',id='${BaseName}') ${Name}
           //a(href='#', id='close${BaseName}')
             span.glyphicon.glyphicon-remove
       p
         ul#file-name-lists.nav.nav-tabs(onContextmenu="return false")
-          li
+          li.disabled-on-running
             a#create-file(href='#', data-toggle="tooltip", title="New&nbsp;File")
               span.glyphicon.glyphicon-plus
-          li.pull-right
+          li.pull-right.disabled-on-running
             a#delete-file(href='#', data-toggle="tooltip", title="Delete&nbsp;File")
               span.glyphicon.glyphicon-remove
       p
