@@ -919,28 +919,34 @@ $(function () {
         if (ev.ctrlKey) {
             switch (ev.keyCode) {
                 case 13:
-                    CompileCallback(ev);
                     ev.preventDefault();
+                    ev.stopPropagation();
+                    CompileCallback(ev);
                     return;
                 case 78:
-                    CreateFileFunction(ev);
                     ev.preventDefault();
+                    ev.stopPropagation();
+                    CreateFileFunction(ev);
                     return;
                 case 87:
-                    DeleteFileFunction(ev);
                     ev.preventDefault();
+                    ev.stopPropagation();
+                    DeleteFileFunction(ev);
                     return;
                 case 82:
-                    RenameFunction(ev);
                     ev.preventDefault();
+                    ev.stopPropagation();
+                    RenameFunction(ev);
                     return;
                 case 83:
-                    SaveFunction(ev);
                     ev.preventDefault();
+                    ev.stopPropagation();
+                    SaveFunction(ev);
                     return;
                 case 79:
-                    $("#file-open-dialog").click();
                     ev.preventDefault();
+                    ev.stopPropagation();
+                    $("#file-open-dialog").click();
                     return;
             }
         }
