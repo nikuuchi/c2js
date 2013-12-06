@@ -874,31 +874,31 @@ $(function () {
                     ev.stopPropagation();
                     CompileCallback(ev);
                     return;
-                case 78:/*n*/
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    CreateFileFunction(ev);
-                    return;
-                case 87:/*w*/
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    DeleteFileFunction(ev);
-                    return;
-                case 82:/*r*/
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    RenameFunction(ev);
-                    return;
-                case 83:/*s*/
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    SaveFunction(ev);
-                    return;
-                case 79:/*o*/
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    $("#file-open-dialog").click();
-                    return;
+//                case 78:/*n*/
+//                    ev.preventDefault();
+//                    ev.stopPropagation();
+//                    CreateFileFunction(ev);
+//                    return;
+//                case 87:/*w*/
+//                    ev.preventDefault();
+//                    ev.stopPropagation();
+//                    DeleteFileFunction(ev);
+//                    return;
+//                case 82:/*r*/
+//                    ev.preventDefault();
+//                    ev.stopPropagation();
+//                    RenameFunction(ev);
+//                    return;
+//                case 83:/*s*/
+//                    ev.preventDefault();
+//                    ev.stopPropagation();
+//                    SaveFunction(ev);
+//                    return;
+//                case 79:/*o*/
+//                    ev.preventDefault();
+//                    ev.stopPropagation();
+//                    $("#file-open-dialog").click();
+//                    return;
             }
         }
     };

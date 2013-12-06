@@ -35,38 +35,38 @@ html
               | File
               | &nbsp;
               span.caret
-          ul.dropdown-menu(role='menu', style='right: auto; width: 250px;', onContextmenu="return false")
+          ul.dropdown-menu(role='menu', style='right: auto;', onContextmenu="return false")
             li
               a#create-file-menu(href='#')
                 span.glyphicon.glyphicon-plus
                 | &nbsp;
                 | New File...
-                span.pull-right Ctrl+N
+                //span.pull-right Ctrl+N
             li
               a#open-file-menu(href='#')
                 span.glyphicon.glyphicon-folder-open
                 | &nbsp;
                 | Open File...
-                span.pull-right Ctrl+O
+                //span.pull-right Ctrl+O
             li.disabled-on-files-empty
               a#save-file-menu(href='#')
                 span.glyphicon.glyphicon-floppy-save
                 | &nbsp;
                 | Save
-                span.pull-right Ctrl+S
+                //span.pull-right Ctrl+S
             li.disabled-on-files-empty
               a#rename-menu(href='#')
                 span.glyphicon.glyphicon-edit
                 | &nbsp;
                 | Rename...
-                span.pull-right Ctrl+R
+                //span.pull-right Ctrl+R
             li.divider
             li.disabled-on-files-empty
               a#delete-file-menu(href='#')
                 span.glyphicon.glyphicon-remove
                 | &nbsp;
                 | Delete File
-                span.pull-right Ctrl+W
+                //span.pull-right Ctrl+W
             li.disabled-on-files-empty
               a#delete-all-file-menu(href='#')
                 span.glyphicon.glyphicon-remove

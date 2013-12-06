@@ -932,31 +932,6 @@ $(function () {
                     ev.stopPropagation();
                     CompileCallback(ev);
                     return;
-                case 78:
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    CreateFileFunction(ev);
-                    return;
-                case 87:
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    DeleteFileFunction(ev);
-                    return;
-                case 82:
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    RenameFunction(ev);
-                    return;
-                case 83:
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    SaveFunction(ev);
-                    return;
-                case 79:
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    $("#file-open-dialog").click();
-                    return;
             }
         }
     };
