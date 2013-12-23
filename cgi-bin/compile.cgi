@@ -7,6 +7,7 @@ import time
 import commands
 import codecs
 import json
+import yaml
 from pymongo import MongoClient
 
 def CreateResponseJson(source, result, error):
@@ -21,8 +22,8 @@ def CreateCSourceFile(name, contents):
 def Compile(name):
     return commands.getoutput('emcc -O1 -W -Wall -Qunused-arguments ' + name + ' -o ' + name + '.js')
 
-def WriteLog(name, input_log, compile_flag, message, env, unix_time, ctime):
-    conn = MongoClient("127.0.0.1")
+def WriteLog(name, input_log, compile_flag, message, env, unix_time, ctime, addr):
+    conn = MongoClient(addr)
     db = conn.test
     logjson = {'input': input_log , 'runnable': compile_flag, 'message': message, 'env': env, 'unixtime': unix_time, 'time_string': ctime}
     log = codecs.open(name+'.log', 'w', 'utf-8');
@@ -37,6 +38,17 @@ if os.environ['REQUEST_METHOD'] != "POST":
     print '{\'error\':No Method Error\' }'
     sys.exit()
 
+ip_addr = "192.168.0.1"
+config_file = "default.yaml"
+if os.path.exists("production.yaml"):
+    config_file = "production.yaml"
+
+with open(config_file, "r") as f:
+    y = yaml.load(f)
+    if y["mongo"] is not None:
+        if y["mongo"]["ip"] is not None:
+            ip_addr = y["mongo"]["ip"]
+
 name = commands.getoutput("/bin/mktemp -q /tmp/XXXXXX.c")
 req = json.load(sys.stdin)
 
@@ -49,6 +61,6 @@ if compile_flag:
     a = open(name+'.js', 'r')
     jsfilecontent = a.read()
 
-WriteLog(name, req, compile_flag, message, os.environ.__dict__, int(time.time()), time.ctime())
+WriteLog(name, req, compile_flag, message, os.environ.__dict__, int(time.time()), time.ctime(), ip_addr)
 
 print CreateResponseJson(jsfilecontent, '', message)
