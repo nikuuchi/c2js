@@ -38,7 +38,7 @@ if os.environ['REQUEST_METHOD'] != "POST":
     print '{\'error\':No Method Error\' }'
     sys.exit()
 
-ip_addr = "192.168.0.1"
+ip_addr = "127.0.0.1"
 config_file = "default.yaml"
 if os.path.exists("production.yaml"):
     config_file = "production.yaml"
