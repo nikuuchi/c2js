@@ -15,7 +15,6 @@ def CreateResponseJson(source, result, error):
 
 def CreateCSourceFile(name, contents):
     f = codecs.open(name, 'w', 'utf-8')
-    #f.write(req['source'])
     f.write(contents)
     f.close()
 
@@ -47,6 +46,22 @@ class MessageParser:
         ret["message"] = x
         return ret
 
+def loadConfig():
+    config = {}
+    default_path = os.path.join(os.path.dirname(__file__), 'default.yaml')
+    if os.path.exists(default_path):
+        with open(default_path) as f:
+            config.update(yaml.load(f))
+    dev_path = os.path.join(os.path.dirname(__file__), 'development.yaml')
+    pro_path = os.path.join(os.path.dirname(__file__), 'production.yaml')
+    if os.path.exists(dev_path):
+        with open(dev_path) as f:
+            config.update(yaml.load(f))
+    elif os.path.exists(pro_path):
+        with open(pro_path) as f:
+            config.update(yaml.load(f))
+    return config
+
 def saveMessage(db, message):
     if len(message) <= 0:
         return
@@ -65,36 +80,30 @@ def WriteLog(name, input_log, compile_flag, message, env, unix_time, ctime, addr
     db.raw_compile_data.save(logjson)
     saveMessage(db, message)
 
-print "Content-Type: application/json"
-print ""
 
-if os.environ['REQUEST_METHOD'] != "POST":
-    print '{\'error\':No Method Error\' }'
-    sys.exit()
+if __name__ == '__main__':
+    print "Content-Type: application/json"
+    print ""
 
-ip_addr = "127.0.0.1"
-config_file = "default.yaml"
-if os.path.exists("production.yaml"):
-    config_file = "production.yaml"
+    if os.environ['REQUEST_METHOD'] != "POST":
+        print '{\'error\':No Method Error\' }'
+        sys.exit()
 
-with open(config_file, "r") as f:
-    y = yaml.load(f)
-    if y["mongo"] is not None:
-        if y["mongo"]["ip"] is not None:
-            ip_addr = y["mongo"]["ip"]
+    config = loadConfig()
+    ip_addr = config["mongo"]["ip"]
 
-name = commands.getoutput("/bin/mktemp -q /tmp/XXXXXX.c")
-req = json.load(sys.stdin)
+    name = commands.getoutput("/bin/mktemp -q /tmp/XXXXXX.c")
+    req = json.load(sys.stdin)
 
-CreateCSourceFile(name, req["source"])
-message = Compile(name)
+    CreateCSourceFile(name, req["source"])
+    message = Compile(name)
 
-jsfilecontent = ''
-compile_flag = os.path.exists(name+".js")
-if compile_flag:
-    a = open(name+'.js', 'r')
-    jsfilecontent = a.read()
+    jsfilecontent = ''
+    compile_flag = os.path.exists(name+".js")
+    if compile_flag:
+        a = open(name+'.js', 'r')
+        jsfilecontent = a.read()
 
-WriteLog(name, req, compile_flag, message, os.environ.__dict__, int(time.time()), time.ctime(), ip_addr)
+    WriteLog(name, req, compile_flag, message, os.environ.__dict__, int(time.time()), time.ctime(), ip_addr)
 
-print CreateResponseJson(jsfilecontent, '', message)
+    print CreateResponseJson(jsfilecontent, '', message)
