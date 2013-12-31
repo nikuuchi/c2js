@@ -22,6 +22,39 @@ def CreateCSourceFile(name, contents):
 def Compile(name):
     return commands.getoutput('emcc -O1 -W -Wall -Qunused-arguments ' + name + ' -o ' + name + '.js')
 
+class MessageParser:
+    def __init__(self):
+        self.checker = [
+                "identifier",
+                "redefinition of",
+                "expected ';'",
+                "invalid operands to binary expression",
+                "too few arguments to function call",
+                "extraneous" ]
+
+    def isErrorLine(self, line):
+        return line.find("error:") != -1
+
+    def getErrorMessage(self, line):
+        x = line[line.find("error:")+7:]
+        ret = {"type": "error"}
+
+        for it in self.checker:
+            if x.find(it) != -1:
+                idx = x.find(it)+len(it)
+                ret["message"] = x[:idx]
+                return ret
+        ret["message"] = x
+        return ret
+
+def saveMessage(db, message):
+    if len(message) <= 0:
+        return
+    mp = MessageParser()
+    for x in message.split('\n'):
+        if mp.isErrorLine(x):
+            db.compile_message.save(mp.getErrorMessage(x))
+
 def WriteLog(name, input_log, compile_flag, message, env, unix_time, ctime, addr):
     conn = MongoClient(addr)
     db = conn.test
@@ -30,6 +63,7 @@ def WriteLog(name, input_log, compile_flag, message, env, unix_time, ctime, addr
     log.write(json.dumps(logjson))
     log.close()
     db.raw_compile_data.save(logjson)
+    saveMessage(db, message)
 
 print "Content-Type: application/json"
 print ""
