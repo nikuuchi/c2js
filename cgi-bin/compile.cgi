@@ -24,6 +24,7 @@ def Compile(name):
 class MessageParser:
     def __init__(self):
         self.checker = [
+                "struct",
                 "identifier",
                 "redefinition of",
                 "expected ';'",
@@ -62,13 +63,15 @@ def loadConfig():
             config.update(yaml.load(f))
     return config
 
-def saveMessage(db, message):
+def saveMessage(db, message, unix_time):
     if len(message) <= 0:
         return
     mp = MessageParser()
     for x in message.split('\n'):
         if mp.isErrorLine(x):
-            db.compile_message.save(mp.getErrorMessage(x))
+            j = mp.getErrorMessage(x)
+            j["unixtime"] = unix_time
+            db.compile_message.save(j)
 
 def WriteLog(name, input_log, compile_flag, message, env, unix_time, ctime, addr):
     conn = MongoClient(addr)
@@ -78,8 +81,7 @@ def WriteLog(name, input_log, compile_flag, message, env, unix_time, ctime, addr
     log.write(json.dumps(logjson))
     log.close()
     db.raw_compile_data.save(logjson)
-    saveMessage(db, message)
-
+    saveMessage(db, message, unix_time)
 
 if __name__ == '__main__':
     print "Content-Type: application/json"
